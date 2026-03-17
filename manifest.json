@@ -1,0 +1,72 @@
+{
+  "name": "wuli",
+  "version": "1.0.0",
+  "description": "Generate AI images and videos with 15+ models via Wuli.art open platform API. Use when creating images from text prompts, editing or modifying existing images with AI, generating videos from text descriptions, animating static images into videos, batch generating artwork, or choosing between models like Qwen Image, Seedream, Wan Xiang, Kling, Seedance, and MiniMax Hailuo. Covers text-to-image, image-to-image, text-to-video, image-to-video, prompt optimization, and no-watermark downloads.",
+  "author": "sir1st",
+  "license": "MIT",
+  "main": "skill.py",
+  "tags": [
+    "ai",
+    "image-generation",
+    "video-generation",
+    "text-to-image",
+    "text-to-video",
+    "image-to-video",
+    "image-editing",
+    "art",
+    "creative",
+    "wuli"
+  ],
+  "metadata": {
+    "clawdbot": {
+      "emoji": "🎨",
+      "requires": {
+        "anyBins": ["python3"]
+      },
+      "os": ["linux", "darwin", "win32"]
+    }
+  },
+  "arguments": {
+    "action": {
+      "description": "Action type: image-gen, image-edit, txt2video, image2video",
+      "required": true
+    },
+    "prompt": {
+      "description": "Text prompt for generation (max 2000 chars)",
+      "required": true
+    },
+    "model": {
+      "description": "Model name (default: Qwen Image 2.0 for images, 通义万相 2.2 Turbo for videos)",
+      "default": ""
+    },
+    "aspect_ratio": {
+      "description": "Aspect ratio (1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9, 9:21)",
+      "default": "1:1"
+    },
+    "resolution": {
+      "description": "Resolution (2K, 4K for images; 720P, 1080P for videos)",
+      "default": "2K"
+    },
+    "n": {
+      "description": "Number of images to generate (1-4, image only)",
+      "default": "1"
+    },
+    "image_url": {
+      "description": "Reference image URL (for image-edit and image2video)"
+    },
+    "image_path": {
+      "description": "Local image file path, auto-uploaded (for image-edit and image2video)"
+    },
+    "duration": {
+      "description": "Video duration in seconds (video only)",
+      "default": "5"
+    },
+    "negative_prompt": {
+      "description": "Negative prompt to exclude unwanted elements"
+    },
+    "optimize": {
+      "description": "Enable prompt optimization (flag, no value needed)",
+      "default": "false"
+    }
+  }
+}
