@@ -1,7 +1,7 @@
 ---
 name: wuli
 description: Generate AI images and videos with 15+ models via Wuli.art open platform API. Use when creating images from text prompts, editing or modifying existing images with AI, generating videos from text descriptions, animating static images into videos, batch generating artwork, or choosing between models like Qwen Image, Seedream, Wan Xiang, Kling, Seedance, and MiniMax Hailuo. Covers text-to-image, image-to-image, text-to-video, image-to-video, prompt optimization, and no-watermark downloads.
-version: 1.0.0
+version: 1.0.1
 author: sir1st
 metadata: {"clawdbot":{"emoji":"🎨","requires":{"anyBins":["python3"]},"os":["linux","darwin","win32"]}}
 tags:
