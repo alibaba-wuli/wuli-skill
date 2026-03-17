@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "Generate AI images and videos with 15+ models via Wuli.art open platform API. Use when creating images from text prompts, editing or modifying existing images with AI, generating videos from text descriptions, animating static images into videos, batch generating artwork, or choosing between models like Qwen Image, Seedream, Wan Xiang, Kling, Seedance, and MiniMax Hailuo. Covers text-to-image, image-to-image, text-to-video, image-to-video, prompt optimization, and no-watermark downloads.",
   "author": "sir1st",
-  "license": "MIT",
+  "license": "MIT-0",
   "main": "skill.py",
   "tags": [
     "ai",
@@ -17,13 +17,21 @@
     "creative",
     "wuli"
   ],
+  "env": {
+    "WULI_API_TOKEN": {
+      "description": "Wuli.art API token for authentication. Get it from https://wuli.art (bottom-left corner → API).",
+      "required": true,
+      "secret": true
+    }
+  },
   "metadata": {
     "clawdbot": {
       "emoji": "🎨",
       "requires": {
         "anyBins": ["python3"]
       },
-      "os": ["linux", "darwin", "win32"]
+      "os": ["linux", "darwin", "win32"],
+      "privacy": "This skill uploads local files and remote images to Wuli.art OSS storage for processing. Do not use with sensitive or private files. Uploaded content is transmitted to https://platform.wuli.art and the pre-signed OSS upload URL returned by that API."
     }
   },
   "arguments": {

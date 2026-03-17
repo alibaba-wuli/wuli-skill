@@ -187,6 +187,7 @@ def download_file(url, filename):
 
 
 def open_file(filepath):
+    """Open a local file with the OS default viewer after download."""
     system = platform.system()
     try:
         if system == "Darwin":
