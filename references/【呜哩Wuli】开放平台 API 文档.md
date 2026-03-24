@@ -12,14 +12,10 @@
 
 呜哩开放平台提供图片生成、视频生成等 AI 能力的 API 接口，支持通过 API Token 进行身份认证。
 
-*   **服务地址**: https://platform.wuli.art/api/v1/
-    
-*   **认证方式**: 所有平台接口通过请求头 `Authorization: Bearer <API Token>` 传递 API Token 进行身份认证
-    
-*   **积分消耗**: API 调用正常消耗积分，积分明细中以"API调用-"为前缀标记
-    
-*   **数据隔离**: 通过 API 提交的任务不会出现在网页端的历史记录和资源库中
-    
+- **服务地址**: [https://platform.wuli.art](https://platform.wuli.art)
+- **认证方式**: 所有平台接口通过请求头 `Authorization: Bearer <API Token>` 传递 API Token 进行身份认证
+- **积分消耗**: API 调用正常消耗积分，积分明细中以"API调用-"为前缀标记
+- **数据隔离**: 通过 API 提交的任务不会出现在网页端的历史记录和资源库中
 
 ---
 
@@ -29,46 +25,6 @@
 
 登录 [wuli.art](https://wuli.art)，在左下角进入「API 开放平台」入口，查看或重置你的访问令牌。
 
-也可以通过以下接口管理 Token（需先通过网页端登录）：
-
-#### 获取 Token
-
-```plaintext
-GET /api/v1/user/getApiToken
-```
-
-**响应示例：**
-
-```plaintext
-{
-  "success": true,
-  "code": 200,
-  "data": {
-    "apiToken": "wuli-a1b2c3d4e5f6..."
-  }
-}
-
-```
-
-#### 生成/重置 Token
-
-```plaintext
-POST /api/v1/user/genApiToken
-
-```
-
-**响应示例：**
-
-```plaintext
-{
-  "success": true,
-  "code": 200,
-  "data": {
-    "apiToken": "wuli-a1b2c3d4e5f6..."
-  }
-}
-
-```
 > 重置后旧 Token 立即失效。
 
 ### 认证方式
@@ -79,6 +35,7 @@ POST /api/v1/user/genApiToken
 Authorization: Bearer wuli-a1b2c3d4e5f6...
 
 ```
+
 ---
 
 ## 通用响应格式
@@ -96,13 +53,15 @@ Authorization: Bearer wuli-a1b2c3d4e5f6...
 
 ```
 
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| success | boolean | 请求是否成功 |
-| code | int | 状态码，200 为成功 |
-| msg | string | 错误信息 |
-| data | object | 响应数据 |
-| requestId | string | 请求追踪 ID |
+
+| 字段        | 类型      | 说明          |
+| --------- | ------- | ----------- |
+| success   | boolean | 请求是否成功      |
+| code      | int     | 状态码，200 为成功 |
+| msg       | string  | 错误信息        |
+| data      | object  | 响应数据        |
+| requestId | string  | 请求追踪 ID     |
+
 
 ---
 
@@ -119,35 +78,41 @@ POST /api/v1/platform/predict/submit
 
 #### 请求头
 
-| Header | 必填 | 说明 |
-| --- | --- | --- |
-| Authorization | 是 | `Bearer <API Token>` |
-| Content-Type | 是 | application/json |
+
+| Header        | 必填  | 说明                   |
+| ------------- | --- | -------------------- |
+| Authorization | 是   | `Bearer <API Token>` |
+| Content-Type  | 是   | application/json     |
+
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| modelName | string | 是 | 模型名称，见下方[可用模型列表](#%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%9E%8B) |
-| prompt | string | 是 | 提示词，最长 2000 字符 |
-| mediaType | string | 否 | 媒体类型：`IMAGE` 或 `VIDEO`，不传则根据模型自动判断 |
-| predictType | string | 否 | 生成类型，不传则自动推断。详见[生成类型说明](#%E7%94%9F%E6%88%90%E7%B1%BB%E5%9E%8B) |
-| aspectRatio | string | 是 | 画面比例，如 `1:1`、`16:9`、`9:16` 等 |
-| resolution | string | 是 | 分辨率，如 `2K`、`4K`（图片）或 `720P`、`1080P`（视频） |
-| n | int | 否 | 生成数量，1-4，默认 1 |
-| inputImageList | array | 否 | 参考图片列表，用于图生图、首帧图生视频、首尾帧图生视频、自动视频模式 |
-| inputVideoList | array | 否 | 参考视频列表，用于自动视频模式 |
-| videoTotalSeconds | int | 否 | 视频时长（秒），仅视频模型有效，默认 5 |
-| sound | boolean | 否 | 是否开启声音，仅视频任务有效。不传按后端默认逻辑处理，当前默认 true。部分模型或模式可能忽略该字段 |
-| negativePrompt | string | 否 | 反向提示词 |
-| seed | int | 否 | 随机种子，默认 -1（随机） |
-| optimizePrompt | boolean | 否 | 是否优化提示词，默认 true，建议开启，尤其适合较短或较泛的提示词 |
+
+| 参数                | 类型      | 必填  | 说明                                                             |
+| ----------------- | ------- | --- | -------------------------------------------------------------- |
+| modelName         | string  | 是   | 模型名称，见下方[可用模型列表](#%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%9E%8B)        |
+| prompt            | string  | 是   | 提示词，最长 2000 字符                                                 |
+| mediaType         | string  | 否   | 媒体类型：`IMAGE` 或 `VIDEO`，不传则根据模型自动判断                             |
+| predictType       | string  | 否   | 生成类型，不传则自动推断。详见[生成类型说明](#%E7%94%9F%E6%88%90%E7%B1%BB%E5%9E%8B) |
+| aspectRatio       | string  | 是   | 画面比例，如 `1:1`、`16:9`、`9:16` 等                                   |
+| resolution        | string  | 是   | 分辨率，如 `2K`、`4K`（图片）或 `720P`、`1080P`（视频）                        |
+| n                 | int     | 否   | 生成数量，1-4，默认 1                                                  |
+| inputImageList    | array   | 否   | 参考图片列表，用于图生图、首帧图生视频、首尾帧图生视频、自动视频模式                             |
+| inputVideoList    | array   | 否   | 参考视频列表，用于自动视频模式                                                |
+| videoTotalSeconds | int     | 否   | 视频时长（秒），仅视频模型有效，默认 5                                           |
+| sound             | boolean | 否   | 是否开启声音，仅视频任务有效。不传按后端默认逻辑处理，当前默认 true。部分模型或模式可能忽略该字段            |
+| negativePrompt    | string  | 否   | 反向提示词                                                          |
+| seed              | int     | 否   | 随机种子，默认 -1（随机）                                                 |
+| optimizePrompt    | boolean | 否   | 是否优化提示词，默认 true，建议开启，尤其适合较短或较泛的提示词                             |
+
 
 **inputImageList / inputVideoList 中每个元素格式：**
 
-| 参数 | 类型 | 说明 |
-| --- | --- | --- |
+
+| 参数       | 类型     | 说明                                                            |
+| -------- | ------ | ------------------------------------------------------------- |
 | imageUrl | string | 图片/视频的 URL（须通过上传接口获取）。在 `inputVideoList` 中同样使用 `imageUrl` 字段名 |
+
 
 > 建议大多数场景保持 `optimizePrompt: true`，可以显著改善短提示词、口语化提示词和描述不完整提示词的生成效果。
 >
@@ -265,13 +230,15 @@ POST /api/v1/platform/predict/submit
 
 #### 响应参数
 
-| 参数 | 类型 | 说明 |
-| --- | --- | --- |
-| recordId | string | 任务记录 ID，用于后续查询 |
-| credit | object | 积分消耗信息 |
-| credit.modelGroup | string | 模型分组名 |
-| credit.previousFreeUsage | int | 消耗前剩余免费次数 |
-| credit.currentFreeUsage | int | 消耗后剩余免费次数 |
+
+| 参数                       | 类型     | 说明             |
+| ------------------------ | ------ | -------------- |
+| recordId                 | string | 任务记录 ID，用于后续查询 |
+| credit                   | object | 积分消耗信息         |
+| credit.modelGroup        | string | 模型分组名          |
+| credit.previousFreeUsage | int    | 消耗前剩余免费次数      |
+| credit.currentFreeUsage  | int    | 消耗后剩余免费次数      |
+
 
 #### 响应示例
 
@@ -290,6 +257,7 @@ POST /api/v1/platform/predict/submit
 }
 
 ```
+
 ---
 
 ### 2. 查询任务状态
@@ -303,37 +271,41 @@ GET /api/v1/platform/predict/query?recordId={recordId}
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| recordId | string | 是 | 提交任务时返回的记录 ID |
+
+| 参数       | 类型     | 必填  | 说明            |
+| -------- | ------ | --- | ------------- |
+| recordId | string | 是   | 提交任务时返回的记录 ID |
+
 
 #### 响应参数
 
-| 参数 | 类型 | 说明 |
-| --- | --- | --- |
-| recordId | string | 记录 ID |
-| recordStatus | string | 任务整体状态，见[任务状态说明](#%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81) |
-| gmtCreate | string | 创建时间 |
-| mediaType | string | `IMAGE` 或 `VIDEO` |
-| modelInfo | object | 模型信息 |
-| modelInfo.modelName | string | 模型名称 |
-| genInfo | object | 生成参数信息 |
-| genInfo.prompt | string | 提示词 |
-| genInfo.predictType | string | 生成类型 |
-| genInfo.aspectRatio | string | 画面比例 |
-| genInfo.resolution | string | 分辨率 |
-| genInfo.width | int | 宽度（像素） |
-| genInfo.height | int | 高度（像素） |
-| genInfo.videoTotalSeconds | int | 视频时长（秒） |
-| genInfo.sound | boolean | 是否开启声音 |
-| results | array | 生成结果列表 |
-| results\[\].taskId | string | 子任务 ID |
-| results\[\].imageId | string | 资源 ID |
-| results\[\].imageUrl | string | 结果图片/视频 URL（带水印） |
-| results\[\].status | string | 子任务状态 |
-| results\[\].progress | int | 进度百分比 |
-| results\[\].errorMsg | string | 错误信息 |
-| results\[\].star | int | 收藏状态 |
+
+| 参数                        | 类型      | 说明                                                      |
+| ------------------------- | ------- | ------------------------------------------------------- |
+| recordId                  | string  | 记录 ID                                                   |
+| recordStatus              | string  | 任务整体状态，见[任务状态说明](#%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81) |
+| gmtCreate                 | string  | 创建时间                                                    |
+| mediaType                 | string  | `IMAGE` 或 `VIDEO`                                       |
+| modelInfo                 | object  | 模型信息                                                    |
+| modelInfo.modelName       | string  | 模型名称                                                    |
+| genInfo                   | object  | 生成参数信息                                                  |
+| genInfo.prompt            | string  | 提示词                                                     |
+| genInfo.predictType       | string  | 生成类型                                                    |
+| genInfo.aspectRatio       | string  | 画面比例                                                    |
+| genInfo.resolution        | string  | 分辨率                                                     |
+| genInfo.width             | int     | 宽度（像素）                                                  |
+| genInfo.height            | int     | 高度（像素）                                                  |
+| genInfo.videoTotalSeconds | int     | 视频时长（秒）                                                 |
+| genInfo.sound             | boolean | 是否开启声音                                                  |
+| results                   | array   | 生成结果列表                                                  |
+| results.taskId            | string  | 子任务 ID                                                  |
+| results.imageId           | string  | 资源 ID                                                   |
+| results.imageUrl          | string  | 结果图片/视频 URL（带水印）                                        |
+| results.status            | string  | 子任务状态                                                   |
+| results.progress          | int     | 进度百分比                                                   |
+| results.errorMsg          | string  | 错误信息                                                    |
+| results.star              | int     | 收藏状态                                                    |
+
 
 #### 响应示例
 
@@ -372,6 +344,7 @@ GET /api/v1/platform/predict/query?recordId={recordId}
 }
 
 ```
+
 ---
 
 ### 3. 获取无水印图片/视频
@@ -385,13 +358,15 @@ POST /api/v1/platform/predict/noWatermarkImage
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| taskId | string | 否\* | 子任务 ID |
-| resourceId | string | 否\* | 资源 ID |
-| resourceIdList | array | 否\* | 资源 ID 列表（批量获取） |
 
-> \*三个参数至少传一个。
+| 参数             | 类型     | 必填  | 说明             |
+| -------------- | ------ | --- | -------------- |
+| taskId         | string | 否   | 子任务 ID         |
+| resourceId     | string | 否   | 资源 ID          |
+| resourceIdList | array  | 否   | 资源 ID 列表（批量获取） |
+
+
+> 三个参数至少传一个。
 
 #### 请求示例
 
@@ -427,6 +402,7 @@ POST /api/v1/platform/predict/noWatermarkImage
 }
 
 ```
+
 ---
 
 ### 4. 获取预签名上传 URL
@@ -440,18 +416,22 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 
 #### 请求参数
 
-| 参数 | 类型 | 必填 | 说明 |
-| --- | --- | --- | --- |
-| filename | string | 是 | 文件名（含后缀），如 `photo.jpg`、`clip.mp4` |
+
+| 参数       | 类型     | 必填  | 说明                                |
+| -------- | ------ | --- | --------------------------------- |
+| filename | string | 是   | 文件名（含后缀），如 `photo.jpg`、`clip.mp4` |
+
 
 支持的图片格式：`jpg`、`jpeg`、`png`、`webp` 支持的视频格式：`mp4`、`mov`、`avi`、`webm`
 
 #### 响应参数
 
-| 参数 | 类型 | 说明 |
-| --- | --- | --- |
-| uploadUrl | string | 预签名上传 URL，使用 `PUT` 方法上传文件，有效期 1 小时 |
-| objectName | string | 文件对象名（仅供参考） |
+
+| 参数         | 类型     | 说明                                 |
+| ---------- | ------ | ---------------------------------- |
+| uploadUrl  | string | 预签名上传 URL，使用 `PUT` 方法上传文件，有效期 1 小时 |
+| objectName | string | 文件对象名（仅供参考）                        |
+
 
 #### 响应示例
 
@@ -469,12 +449,9 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 
 #### 使用流程
 
-1.  调用本接口获取 `uploadUrl` 和 `objectName`
-    
-2.  使用 `PUT` 方法将文件二进制数据上传到 `uploadUrl`，请求头必须设置 `Content-Type: application/octet-stream`
-    
-3.  将 `uploadUrl` 去掉查询参数（`?Expires=...` 部分）后的基础 URL 作为 `inputImageList[].imageUrl` 或 `inputVideoList[].imageUrl` 的值传入生成接口
-    
+1. 调用本接口获取 `uploadUrl` 和 `objectName`
+2. 使用 `PUT` 方法将文件二进制数据上传到 `uploadUrl`，请求头必须设置 `Content-Type: application/octet-stream`
+3. 将 `uploadUrl` 去掉查询参数（`?Expires=...` 部分）后的基础 URL 作为 `inputImageList[].imageUrl` 或 `inputVideoList[].imageUrl` 的值传入生成接口
 
 #### 上传文件到预签名 URL
 
@@ -603,6 +580,7 @@ def upload_remote_image(image_url, token):
 ```
 
 > **注意事项：**
+>
 > - 上传时 `Content-Type` 必须设置为 `application/octet-stream`，不要使用 `multipart/form-data` 或文件的实际 MIME 类型
 > - `uploadUrl` 有效期为 1 小时，请及时上传
 > - 上传完成后，需将 `uploadUrl` 去掉 `?` 及其后面的签名参数部分，得到的基础 URL 才能作为 `inputImageList[].imageUrl` 或 `inputVideoList[].imageUrl` 使用
@@ -615,48 +593,54 @@ def upload_remote_image(image_url, token):
 
 ### 图片生成模型
 
-| 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 最大生成数 | 最大参考图数 | 每张积分消耗 |
-| --- | --- | --- | --- | --- | --- |
-| Qwen Image 2.0 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
-| Qwen Image Turbo | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
-| Seedream 5.0 Lite | TXT_2_IMG, REF_2_IMG | 2K, 3K | 4 | 8 | 4 |
-| Seedream 4.5 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 8 | 4 |
-| Seedream 4.0 | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4 | 8 | 4 |
+
+| 模型名称 (modelName)  | 支持的生成类型              | 支持的分辨率     | 最大生成数 | 最大参考图数 | 每张积分消耗 |
+| ----------------- | -------------------- | ---------- | ----- | ------ | ------ |
+| Qwen Image 2.0    | TXT_2_IMG, REF_2_IMG | 2K, 4K     | 4     | 4      | 1      |
+| Qwen Image Turbo  | TXT_2_IMG, REF_2_IMG | 2K, 4K     | 4     | 4      | 1      |
+| Seedream 5.0 Lite | TXT_2_IMG, REF_2_IMG | 2K, 3K     | 4     | 8      | 4      |
+| Seedream 4.5      | TXT_2_IMG, REF_2_IMG | 2K, 4K     | 4     | 8      | 4      |
+| Seedream 4.0      | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4     | 8      | 4      |
+
 
 > 当前默认推荐接入以上图片模型。`Qwen Image 25.08`、`Qwen Image 25.11`、`Qwen Image 25.12`、`通义万相 2.6` 图片模型在配置中仍保留兼容信息，但不作为当前默认接入模型。
 
 #### 图片画面比例
 
-| aspectRatio | 说明 |
-| --- | --- |
-| 1:1 | 正方形 |
-| 4:3 | 横向 4:3 |
-| 3:2 | 横向 3:2 |
-| 16:9 | 宽屏横向 |
-| 21:9 | 超宽横向 |
-| 3:4 | 纵向 3:4 |
-| 2:3 | 纵向 2:3 |
-| 9:16 | 竖屏纵向 |
-| 9:21 | 超高纵向 |
+
+| aspectRatio | 说明     |
+| ----------- | ------ |
+| 1:1         | 正方形    |
+| 4:3         | 横向 4:3 |
+| 3:2         | 横向 3:2 |
+| 16:9        | 宽屏横向   |
+| 21:9        | 超宽横向   |
+| 3:4         | 纵向 3:4 |
+| 2:3         | 纵向 2:3 |
+| 9:16        | 竖屏纵向   |
+| 9:21        | 超高纵向   |
+
 
 ---
 
 ### 视频生成模型
 
-| 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 支持的时长(秒) | 最大参考图数 | 最大参考视频数 | 支持声音开关 | 默认声音行为 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 通义万相 2.2 Turbo | TXT_2_VIDEO, FF_2_VIDEO | 720P | 5 | 1 | 0 | 否 | 无音频输出 |
-| 通义万相 2.6 Flash | FF_2_VIDEO | 720P, 1080P | 5, 10, 15 | 1 | 0 | 否（当前实现固定开启） | 默认带音频 |
-| 通义万相 2.6 | TXT_2_VIDEO, FF_2_VIDEO, AUTO_VIDEO | 720P, 1080P | 5, 10, 15（AUTO_VIDEO 为 5, 10） | 2（AUTO_VIDEO 为 5） | 3（AUTO_VIDEO） | 部分支持 | `AUTO_VIDEO` 可控；`FF_2_VIDEO` 当前固定带音频；其余模式以模型实际返回为准 |
-| 可灵 3.0 Omni | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO_VIDEO | 720P, 1080P | 5, 10, 15 | 7 | 1 | 是 | 无参考视频时默认开启；有参考视频时默认保留原声 |
-| 可灵 O1 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO_VIDEO | 720P, 1080P | 5, 10 | 7 | 1 | 是 | 无参考视频时默认开启；有参考视频时默认保留原声 |
-| 可灵 3.0 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 720P, 1080P | 5, 10, 15 | 2 | 0 | 是 | 默认开启 |
-| 可灵 2.6 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 1080P | 5, 10 | 2 | 0 | 是 | 默认开启 |
-| 可灵 2.5 Turbo | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 1080P | 5, 10 | 2 | 0 | 是 | 默认开启 |
-| Seedance 1.5 Pro | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 480P, 720P | 5, 10, 12 | 2 | 0 | 是 | 默认开启 |
-| Seedance 1.0 Pro | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 480P, 720P, 1080P | 5, 10 | 2 | 0 | 是 | 默认开启 |
-| MiniMax Hailuo 2.3 | TXT_2_VIDEO, FF_2_VIDEO | 768P, 1080P | 6, 10 | 1 | 0 | 否 | 无音频输出 |
-| MiniMax Hailuo 2.3 Fast | FF_2_VIDEO | 768P, 1080P | 6, 10 | 1 | 0 | 否 | 无音频输出 |
+
+| 模型名称 (modelName)        | 支持的生成类型                                          | 支持的分辨率            | 支持的时长(秒)                      | 最大参考图数            | 最大参考视频数       | 支持声音开关      | 默认声音行为                                             |
+| ----------------------- | ------------------------------------------------ | ----------------- | ----------------------------- | ----------------- | ------------- | ----------- | -------------------------------------------------- |
+| 通义万相 2.2 Turbo          | TXT_2_VIDEO, FF_2_VIDEO                          | 720P              | 5                             | 1                 | 0             | 否           | 无音频输出                                              |
+| 通义万相 2.6 Flash          | FF_2_VIDEO                                       | 720P, 1080P       | 5, 10, 15                     | 1                 | 0             | 否（当前实现固定开启） | 默认带音频                                              |
+| 通义万相 2.6                | TXT_2_VIDEO, FF_2_VIDEO, AUTO_VIDEO              | 720P, 1080P       | 5, 10, 15（AUTO_VIDEO 为 5, 10） | 2（AUTO_VIDEO 为 5） | 3（AUTO_VIDEO） | 部分支持        | `AUTO_VIDEO` 可控；`FF_2_VIDEO` 当前固定带音频；其余模式以模型实际返回为准 |
+| 可灵 3.0 Omni             | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO_VIDEO | 720P, 1080P       | 5, 10, 15                     | 7                 | 1             | 是           | 无参考视频时默认开启；有参考视频时默认保留原声                            |
+| 可灵 O1                   | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO_VIDEO | 720P, 1080P       | 5, 10                         | 7                 | 1             | 是           | 无参考视频时默认开启；有参考视频时默认保留原声                            |
+| 可灵 3.0                  | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO             | 720P, 1080P       | 5, 10, 15                     | 2                 | 0             | 是           | 默认开启                                               |
+| 可灵 2.6                  | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO             | 1080P             | 5, 10                         | 2                 | 0             | 是           | 默认开启                                               |
+| 可灵 2.5 Turbo            | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO             | 1080P             | 5, 10                         | 2                 | 0             | 是           | 默认开启                                               |
+| Seedance 1.5 Pro        | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO             | 480P, 720P        | 5, 10, 12                     | 2                 | 0             | 是           | 默认开启                                               |
+| Seedance 1.0 Pro        | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO             | 480P, 720P, 1080P | 5, 10                         | 2                 | 0             | 是           | 默认开启                                               |
+| MiniMax Hailuo 2.3      | TXT_2_VIDEO, FF_2_VIDEO                          | 768P, 1080P       | 6, 10                         | 1                 | 0             | 否           | 无音频输出                                              |
+| MiniMax Hailuo 2.3 Fast | FF_2_VIDEO                                       | 768P, 1080P       | 6, 10                         | 1                 | 0             | 否           | 无音频输出                                              |
+
 
 > 当前默认推荐接入以上视频模型。`智能模型`、`Wan 2.2 Turbo` 等隐藏模型在配置中保留兼容信息，但不作为当前默认接入模型。
 >
@@ -672,116 +656,148 @@ def upload_remote_image(image_url, token):
 
 **通义万相 2.2 Turbo**
 
-| 分辨率 | 5秒 |
-| --- | --- |
-| 720P | 20 |
+
+| 分辨率  | 5秒  |
+| ---- | --- |
+| 720P | 20  |
+
 
 **通义万相 2.6 Flash**
 
-| 分辨率 | 5秒 | 10秒 | 15秒 |
-| --- | --- | --- | --- |
-| 720P | 20 | 40 | 60 |
-| 1080P | 40 | 80 | 120 |
+
+| 分辨率   | 5秒  | 10秒 | 15秒 |
+| ----- | --- | --- | --- |
+| 720P  | 20  | 40  | 60  |
+| 1080P | 40  | 80  | 120 |
+
 
 **通义万相 2.6（TXT_2_VIDEO / FF_2_VIDEO）**
 
-| 分辨率 | 5秒 | 10秒 | 15秒 |
-| --- | --- | --- | --- |
-| 720P | 40 | 80 | 120 |
-| 1080P | 60 | 120 | 180 |
+
+| 分辨率   | 5秒  | 10秒 | 15秒 |
+| ----- | --- | --- | --- |
+| 720P  | 40  | 80  | 120 |
+| 1080P | 60  | 120 | 180 |
+
 
 **通义万相 2.6（AUTO_VIDEO）**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 720P | 40 | 80 |
-| 1080P | 60 | 120 |
+
+| 分辨率   | 5秒  | 10秒 |
+| ----- | --- | --- |
+| 720P  | 40  | 80  |
+| 1080P | 60  | 120 |
+
 
 **可灵 3.0 Omni（TXT_2_VIDEO / FF_2_VIDEO / FLF_2_VIDEO）**
 
-| 分辨率 | 5秒 | 10秒 | 15秒 |
-| --- | --- | --- | --- |
-| 720P | 60 | 120 | 180 |
-| 1080P | 80 | 160 | 240 |
+
+| 分辨率   | 5秒  | 10秒 | 15秒 |
+| ----- | --- | --- | --- |
+| 720P  | 60  | 120 | 180 |
+| 1080P | 80  | 160 | 240 |
+
 
 **可灵 3.0 Omni（AUTO_VIDEO）**
 
-| 分辨率 | 5秒 | 10秒 | 15秒 |
-| --- | --- | --- | --- |
-| 720P | 80 | 160 | 180 |
+
+| 分辨率   | 5秒  | 10秒 | 15秒 |
+| ----- | --- | --- | --- |
+| 720P  | 80  | 160 | 180 |
 | 1080P | 100 | 200 | 240 |
+
 
 **可灵 O1（TXT_2_VIDEO / FF_2_VIDEO / FLF_2_VIDEO）**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 720P | 40 | 80 |
-| 1080P | 60 | 100 |
+
+| 分辨率   | 5秒  | 10秒 |
+| ----- | --- | --- |
+| 720P  | 40  | 80  |
+| 1080P | 60  | 100 |
+
 
 **可灵 O1（AUTO_VIDEO）**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 720P | 60 | 120 |
-| 1080P | 80 | 160 |
+
+| 分辨率   | 5秒  | 10秒 |
+| ----- | --- | --- |
+| 720P  | 60  | 120 |
+| 1080P | 80  | 160 |
+
 
 **可灵 3.0**
 
-| 分辨率 | 5秒 | 10秒 | 15秒 |
-| --- | --- | --- | --- |
-| 720P | 80 | 160 | 240 |
+
+| 分辨率   | 5秒  | 10秒 | 15秒 |
+| ----- | --- | --- | --- |
+| 720P  | 80  | 160 | 240 |
 | 1080P | 100 | 200 | 300 |
+
 
 **可灵 2.6**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 1080P | 60 | 120 |
+
+| 分辨率   | 5秒  | 10秒 |
+| ----- | --- | --- |
+| 1080P | 60  | 120 |
+
 
 **可灵 2.5 Turbo**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 1080P | 40 | 80 |
+
+| 分辨率   | 5秒  | 10秒 |
+| ----- | --- | --- |
+| 1080P | 40  | 80  |
+
 
 **Seedance 1.5 Pro**
 
-| 分辨率 | 5秒 | 10秒 | 12秒 |
-| --- | --- | --- | --- |
-| 480P | 20 | 40 | 60 |
-| 720P | 40 | 80 | 100 |
+
+| 分辨率  | 5秒  | 10秒 | 12秒 |
+| ---- | --- | --- | --- |
+| 480P | 20  | 40  | 60  |
+| 720P | 40  | 80  | 100 |
+
 
 **Seedance 1.0 Pro**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 480P | 20 | 40 |
-| 720P | 40 | 80 |
-| 1080P | 80 | 160 |
+
+| 分辨率   | 5秒  | 10秒 |
+| ----- | --- | --- |
+| 480P  | 20  | 40  |
+| 720P  | 40  | 80  |
+| 1080P | 80  | 160 |
+
 
 **MiniMax Hailuo 2.3**
 
-| 分辨率 | 6秒 | 10秒 |
-| --- | --- | --- |
-| 768P | 40 | 80 |
-| 1080P | 60 | 100 |
+
+| 分辨率   | 6秒  | 10秒 |
+| ----- | --- | --- |
+| 768P  | 40  | 80  |
+| 1080P | 60  | 100 |
+
 
 **MiniMax Hailuo 2.3 Fast**
 
-| 分辨率 | 6秒 | 10秒 |
-| --- | --- | --- |
-| 768P | 20 | 40 |
-| 1080P | 40 | 40 |
+
+| 分辨率   | 6秒  | 10秒 |
+| ----- | --- | --- |
+| 768P  | 20  | 40  |
+| 1080P | 40  | 40  |
+
 
 #### 视频画面比例
 
-| aspectRatio | 说明 |
-| --- | --- |
-| 1:1 | 正方形 |
-| 4:3 | 横向 4:3 |
-| 3:4 | 纵向 3:4 |
-| 16:9 | 宽屏横向 |
-| 9:16 | 竖屏纵向 |
+
+| aspectRatio | 说明     |
+| ----------- | ------ |
+| 1:1         | 正方形    |
+| 4:3         | 横向 4:3 |
+| 3:4         | 纵向 3:4 |
+| 16:9        | 宽屏横向   |
+| 9:16        | 竖屏纵向   |
+
 
 > 不同模型支持的画面比例可能不同，请以实际模型配置为准。
 
@@ -789,14 +805,16 @@ def upload_remote_image(image_url, token):
 
 ## 生成类型
 
-| predictType | 说明 | 适用场景 |
-| --- | --- | --- |
-| TXT_2_IMG | 文生图 | 纯文本提示词生成图片 |
-| REF_2_IMG | 图生图 | 一张或多张参考图片 + 提示词生成图片 |
-| TXT_2_VIDEO | 文生视频 | 纯文本提示词生成视频 |
-| FF_2_VIDEO | 图生视频（首帧） | 单张参考图 + 提示词生成视频 |
-| FLF_2_VIDEO | 图生视频（首尾帧） | 首尾两张参考图 + 提示词生成视频 |
-| AUTO_VIDEO | 自动视频模式 | 参考图片、参考视频或混合参考素材 + 提示词生成视频 |
+
+| predictType | 说明        | 适用场景                       |
+| ----------- | --------- | -------------------------- |
+| TXT_2_IMG   | 文生图       | 纯文本提示词生成图片                 |
+| REF_2_IMG   | 图生图       | 一张或多张参考图片 + 提示词生成图片        |
+| TXT_2_VIDEO | 文生视频      | 纯文本提示词生成视频                 |
+| FF_2_VIDEO  | 图生视频（首帧）  | 单张参考图 + 提示词生成视频            |
+| FLF_2_VIDEO | 图生视频（首尾帧） | 首尾两张参考图 + 提示词生成视频          |
+| AUTO_VIDEO  | 自动视频模式    | 参考图片、参考视频或混合参考素材 + 提示词生成视频 |
+
 
 > 历史配置中的 `MULTI_IMG_2_VIDEO`、`VIDEO_2_VIDEO` 等能力，在当前对外模型配置中统一归入 `AUTO_VIDEO` 模式说明。
 
@@ -804,31 +822,35 @@ def upload_remote_image(image_url, token):
 
 ## 任务状态
 
-| 状态 (status) | 说明 | 是否终态 |
-| --- | --- | --- |
-| INITIALIZING | 初始化中 | 否 |
-| OPTIMIZING | 提示词优化中 | 否 |
-| PENDING | 排队等待中 | 否 |
-| PROCESSING | 生成中 | 否 |
-| SUCCEED | 生成成功 | 是 |
-| FAILED | 生成失败 | 是 |
-| REVIEW\_FAILED | 内容审核不通过 | 是 |
-| TIMEOUT | 任务超时 | 是 |
-| CANCELLED | 已取消 | 是 |
+
+| 状态 (status)  | 说明      | 是否终态 |
+| ------------ | ------- | ---- |
+| INITIALIZING | 初始化中    | 否    |
+| OPTIMIZING   | 提示词优化中  | 否    |
+| PENDING      | 排队等待中   | 否    |
+| PROCESSING   | 生成中     | 否    |
+| SUCCEED      | 生成成功    | 是    |
+| FAILED       | 生成失败    | 是    |
+| REVIEWFAILED | 内容审核不通过 | 是    |
+| TIMEOUT      | 任务超时    | 是    |
+| CANCELLED    | 已取消     | 是    |
+
 
 ---
 
 ## 错误码
 
-| code | 说明 |
-| --- | --- |
-| 200 | 成功 |
-| 401 | 未认证，Token 无效或缺失 |
-| 403 | 无权限 |
-| 429 | 请求频率过高 |
-| 1001 | 参数错误 |
-| 2001 | 积分余额不足 |
-| 5000 | 服务内部错误 |
+
+| code | 说明              |
+| ---- | --------------- |
+| 200  | 成功              |
+| 401  | 未认证，Token 无效或缺失 |
+| 403  | 无权限             |
+| 429  | 请求频率过高          |
+| 1001 | 参数错误            |
+| 2001 | 积分余额不足          |
+| 5000 | 服务内部错误          |
+
 
 ---
 
@@ -852,3 +874,4 @@ def upload_remote_image(image_url, token):
    → 获得无水印 URL
 
 ```
+
