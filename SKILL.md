@@ -1,7 +1,7 @@
 ---
 name: wuli
 description: Generate AI images and videos with 17+ active models via Wuli.art open platform API. Use when creating images from text prompts, editing images with one or more references, generating videos from text, animating a first frame, generating first-last-frame videos, or creating auto-video tasks from images and videos. Covers text-to-image, image-to-image, text-to-video, first-frame video, first-last-frame video, auto-video, prompt optimization, uploads, and no-watermark downloads.
-version: 1.0.5
+version: 1.0.6
 author: sir1st
 homepage: https://wuli.art
 repository: https://github.com/alibaba-wuli/wuli-skill

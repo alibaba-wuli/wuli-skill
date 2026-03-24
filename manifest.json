@@ -1,6 +1,6 @@
 {
   "name": "wuli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Generate AI images and videos with 17+ active models via Wuli.art open platform API. Supports text-to-image, multi-reference image editing, text-to-video, first-frame image-to-video, first-last-frame video, auto-video from images and videos, prompt optimization, sound control for supported video models, uploads, and no-watermark downloads.",
   "author": "sir1st",
   "license": "MIT-0",
