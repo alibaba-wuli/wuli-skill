@@ -62,6 +62,22 @@ ACTION_DEFAULTS = {
         "resolution": "720P",
         "needs_image": True,
     },
+    "flf2video": {
+        "media_type": "VIDEO",
+        "predict_type": "FLF_2_VIDEO",
+        "model": "可灵 3.0",
+        "aspect_ratio": "16:9",
+        "resolution": "720P",
+        "needs_image": True,
+    },
+    "auto-video": {
+        "media_type": "VIDEO",
+        "predict_type": "AUTO_VIDEO",
+        "model": "通义万相 2.6",
+        "aspect_ratio": "16:9",
+        "resolution": "720P",
+        "needs_image": False,
+    },
 }
 
 
@@ -108,8 +124,6 @@ def upload_file(file_path, token):
         sys.exit(1)
 
     upload_url = resp["data"]["uploadUrl"]
-    object_name = resp["data"]["objectName"]
-
     # Build public URL from upload_url (strip query params)
     parsed = urllib.parse.urlparse(upload_url)
     public_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
@@ -124,12 +138,12 @@ def upload_file(file_path, token):
     return public_url
 
 
-def upload_url_image(image_url, token):
-    """Download a remote image and re-upload it to OSS."""
-    print(f"Downloading remote image: {image_url} ...")
-    req = urllib.request.Request(image_url)
+def upload_url_media(media_url, token):
+    """Download a remote media file and re-upload it to OSS."""
+    print(f"Downloading remote media: {media_url} ...")
+    req = urllib.request.Request(media_url)
     with urllib.request.urlopen(req, timeout=60) as resp:
-        image_data = resp.read()
+        media_data = resp.read()
         ct = resp.headers.get("Content-Type", "")
 
     ext = ".jpg"
@@ -138,7 +152,7 @@ def upload_url_image(image_url, token):
             ext = suffix
             break
 
-    url_path = urllib.parse.urlparse(image_url).path
+    url_path = urllib.parse.urlparse(media_url).path
     if "." in url_path.split("/")[-1]:
         ext = "." + url_path.split("/")[-1].rsplit(".", 1)[-1].lower()
 
@@ -157,13 +171,28 @@ def upload_url_image(image_url, token):
     parsed = urllib.parse.urlparse(upload_url)
     public_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
 
-    put_req = urllib.request.Request(upload_url, data=image_data, method="PUT")
+    put_req = urllib.request.Request(upload_url, data=media_data, method="PUT")
     put_req.add_header("Content-Type", "application/octet-stream")
     with urllib.request.urlopen(put_req, timeout=120) as _:
         pass
 
     print(f"Upload complete: {public_url}")
     return public_url
+
+
+def parse_list_arg(value):
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def upload_inputs(file_paths, remote_urls, token):
+    uploaded = []
+    for file_path in file_paths:
+        uploaded.append(upload_file(file_path, token))
+    for remote_url in remote_urls:
+        uploaded.append(upload_url_media(remote_url, token))
+    return uploaded
 
 
 def get_no_watermark_urls(task_ids, token):
@@ -203,17 +232,36 @@ def open_file(filepath):
 def main():
     parser = argparse.ArgumentParser(description="Wuli Platform - AI Image/Video Generation")
     parser.add_argument("--action", required=True, choices=ACTION_DEFAULTS.keys(),
-                        help="Action: image-gen, image-edit, txt2video, image2video")
+                        help="Action: image-gen, image-edit, txt2video, image2video, flf2video, auto-video")
     parser.add_argument("--prompt", required=True, help="Generation prompt (max 2000 chars)")
     parser.add_argument("--model", default=None, help="Model name")
     parser.add_argument("--aspect_ratio", default=None, help="Aspect ratio (e.g. 1:1, 16:9)")
     parser.add_argument("--resolution", default=None, help="Resolution (e.g. 2K, 4K, 720P, 1080P)")
     parser.add_argument("--n", type=int, default=1, help="Number of images (1-4, image only)")
-    parser.add_argument("--image_url", default=None, help="Reference image URL")
-    parser.add_argument("--image_path", default=None, help="Local file path (auto-uploaded)")
+    parser.add_argument("--image_url", default=None,
+                        help="Reference image URL(s), comma-separated for multiple images")
+    parser.add_argument("--image_path", default=None,
+                        help="Local image path(s), comma-separated for multiple files")
+    parser.add_argument("--end_image_url", default=None,
+                        help="End-frame image URL for flf2video")
+    parser.add_argument("--end_image_path", default=None,
+                        help="End-frame local image path for flf2video")
+    parser.add_argument("--video_url", default=None,
+                        help="Reference video URL(s), comma-separated for auto-video")
+    parser.add_argument("--video_path", default=None,
+                        help="Local video path(s), comma-separated for auto-video")
     parser.add_argument("--duration", type=int, default=None, help="Video duration in seconds")
     parser.add_argument("--negative_prompt", default=None, help="Negative prompt")
-    parser.add_argument("--optimize", action="store_true", help="Enable prompt optimization")
+    parser.set_defaults(optimize=True)
+    parser.add_argument("--optimize", action="store_true", dest="optimize",
+                        help="Enable prompt optimization (default)")
+    parser.add_argument("--no-optimize", action="store_false", dest="optimize",
+                        help="Disable prompt optimization")
+    parser.set_defaults(sound=None)
+    parser.add_argument("--sound", action="store_true", dest="sound",
+                        help="Enable sound for supported video models")
+    parser.add_argument("--no-sound", action="store_false", dest="sound",
+                        help="Disable sound for video output")
     args = parser.parse_args()
 
     token = os.environ.get("WULI_API_TOKEN")
@@ -231,18 +279,53 @@ def main():
     media_type = cfg["media_type"]
     predict_type = cfg["predict_type"]
 
-    if cfg["needs_image"] and not args.image_url and not args.image_path:
-        print(f"Error: --image_url or --image_path is required for {args.action}", file=sys.stderr)
+    image_paths = parse_list_arg(args.image_path)
+    image_urls = parse_list_arg(args.image_url)
+    end_image_paths = parse_list_arg(args.end_image_path)
+    end_image_urls = parse_list_arg(args.end_image_url)
+    video_paths = parse_list_arg(args.video_path)
+    video_urls = parse_list_arg(args.video_url)
+
+    if cfg["needs_image"] and not (image_paths or image_urls or end_image_paths or end_image_urls):
+        print(f"Error: image input is required for {args.action}", file=sys.stderr)
         sys.exit(1)
 
-    # Handle image input: always upload to OSS (local file or remote URL)
-    input_image_list = []
-    if args.image_path:
-        object_name = upload_file(args.image_path, token)
-        input_image_list = [{"imageUrl": object_name}]
-    elif args.image_url:
-        object_name = upload_url_image(args.image_url, token)
-        input_image_list = [{"imageUrl": object_name}]
+    # Handle media inputs: always upload to OSS (local file or remote URL)
+    uploaded_images = upload_inputs(image_paths, image_urls, token)
+    uploaded_end_images = upload_inputs(end_image_paths, end_image_urls, token)
+    uploaded_videos = upload_inputs(video_paths, video_urls, token)
+
+    input_image_urls = uploaded_images + uploaded_end_images
+    input_video_urls = uploaded_videos
+
+    if args.action == "image-edit":
+        if not input_image_urls:
+            print("Error: image-edit requires at least one reference image", file=sys.stderr)
+            sys.exit(1)
+        if input_video_urls:
+            print("Error: image-edit does not accept video input", file=sys.stderr)
+            sys.exit(1)
+    elif args.action == "image2video":
+        if len(input_image_urls) != 1:
+            print("Error: image2video requires exactly one reference image", file=sys.stderr)
+            sys.exit(1)
+        if input_video_urls:
+            print("Error: image2video does not accept video input", file=sys.stderr)
+            sys.exit(1)
+    elif args.action == "flf2video":
+        if len(input_image_urls) != 2:
+            print("Error: flf2video requires exactly two reference images (start and end frame)", file=sys.stderr)
+            sys.exit(1)
+        if input_video_urls:
+            print("Error: flf2video does not accept video input", file=sys.stderr)
+            sys.exit(1)
+    elif args.action == "auto-video":
+        if not input_image_urls and not input_video_urls:
+            print("Error: auto-video requires at least one reference image or video", file=sys.stderr)
+            sys.exit(1)
+
+    input_image_list = [{"imageUrl": url} for url in input_image_urls]
+    input_video_list = [{"imageUrl": url} for url in input_video_urls]
 
     # Build request
     body = {
@@ -255,21 +338,32 @@ def main():
         "n": args.n if media_type == "IMAGE" else 1,
         "optimizePrompt": args.optimize,
         "inputImageList": input_image_list,
-        "inputVideoList": [],
+        "inputVideoList": input_video_list,
     }
 
     duration = args.duration
     if media_type == "VIDEO":
         body["videoTotalSeconds"] = duration if duration else 5
+        if args.sound is not None:
+            body["sound"] = args.sound
     if args.negative_prompt:
         body["negativePrompt"] = args.negative_prompt
 
     print(f"\n=== Wuli Platform: {args.action} ===")
     print(f"Model:  {model}")
     print(f"Prompt: {args.prompt}")
+    print(f"Optimize Prompt: {body['optimizePrompt']}")
     if media_type == "VIDEO":
         print(f"Duration: {body.get('videoTotalSeconds', 5)}s")
+        if args.sound is None:
+            print("Sound: auto (backend default)")
+        else:
+            print(f"Sound: {args.sound}")
     print(f"Aspect: {aspect_ratio}  Resolution: {resolution}")
+    if input_image_list:
+        print(f"Image refs: {len(input_image_list)}")
+    if input_video_list:
+        print(f"Video refs: {len(input_video_list)}")
     print("\nSubmitting request...")
 
     # Submit

@@ -135,18 +135,23 @@ POST /api/v1/platform/predict/submit
 | aspectRatio | string | 是 | 画面比例，如 `1:1`、`16:9`、`9:16` 等 |
 | resolution | string | 是 | 分辨率，如 `2K`、`4K`（图片）或 `720P`、`1080P`（视频） |
 | n | int | 否 | 生成数量，1-4，默认 1 |
-| inputImageList | array | 否 | 参考图片列表，用于图生图/图生视频 |
-| inputVideoList | array | 否 | 参考视频列表，用于视频生视频 |
-| videoTotalSeconds | int | 否 | 视频时长（秒），仅视频模型有效，默认 5 |
+| inputImageList | array | 否 | 参考图片列表，用于图生图、首帧图生视频、首尾帧图生视频、自动视频模式 |
+| inputVideoList | array | 否 | 参考视频列表，用于自动视频模式 |
+| videoTotalSeconds | int | 否 | 视频时长（秒），仅视频模型有效，默认 5 |
+| sound | boolean | 否 | 是否开启声音，仅视频任务有效。不传按后端默认逻辑处理，当前默认 true。部分模型或模式可能忽略该字段 |
 | negativePrompt | string | 否 | 反向提示词 |
-| seed | int | 否 | 随机种子，默认 -1（随机） |
-| optimizePrompt | boolean | 否 | 是否优化提示词，默认 false |
+| seed | int | 否 | 随机种子，默认 -1（随机） |
+| optimizePrompt | boolean | 否 | 是否优化提示词，默认 true，建议开启，尤其适合较短或较泛的提示词 |
 
-**inputImageList / inputVideoList 中每个元素格式：**
+**inputImageList / inputVideoList 中每个元素格式：**
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
-| imageUrl | string | 图片/视频的 URL（须通过上传接口获取） |
+| imageUrl | string | 图片/视频的 URL（须通过上传接口获取）。在 `inputVideoList` 中同样使用 `imageUrl` 字段名 |
+
+> 建议大多数场景保持 `optimizePrompt: true`，可以显著改善短提示词、口语化提示词和描述不完整提示词的生成效果。
+>
+> `sound` 仅对支持声音控制的视频模型有效。对于带参考视频的某些自动视频模式，`sound` 可能表示“是否保留原视频声音”而不是“是否重新生成声音”，以实际模型实现为准。
 
 #### 请求示例
 
@@ -192,24 +197,67 @@ POST /api/v1/platform/predict/submit
   "mediaType": "VIDEO",
   "aspectRatio": "16:9",
   "resolution": "720P",
-  "videoTotalSeconds": 5
+  "videoTotalSeconds": 5,
+  "sound": true
 }
 
 ```
 
-**图生视频：**
+**图生视频（首帧）：**
 
 ```plaintext
 {
-  "modelName": "通义万相 2.6",
+  "modelName": "通义万相 2.6 Flash",
   "prompt": "让画面中的花朵缓缓绽放",
   "mediaType": "VIDEO",
   "predictType": "FF_2_VIDEO",
   "aspectRatio": "16:9",
   "resolution": "720P",
   "videoTotalSeconds": 5,
+  "sound": true,
   "inputImageList": [
     { "imageUrl": "https://your-uploaded-image-url.jpg" }
+  ]
+}
+
+```
+
+**图生视频（首尾帧）：**
+
+```plaintext
+{
+  "modelName": "可灵 3.0",
+  "prompt": "让镜头从第一帧平滑过渡到最后一帧",
+  "mediaType": "VIDEO",
+  "predictType": "FLF_2_VIDEO",
+  "aspectRatio": "16:9",
+  "resolution": "1080P",
+  "videoTotalSeconds": 5,
+  "inputImageList": [
+    { "imageUrl": "https://your-uploaded-start-frame.jpg" },
+    { "imageUrl": "https://your-uploaded-end-frame.jpg" }
+  ]
+}
+
+```
+
+**自动视频模式（图片 + 视频参考）：**
+
+```plaintext
+{
+  "modelName": "可灵 3.0 Omni",
+  "prompt": "保留原始动作节奏，同时转成电影感赛博朋克风格",
+  "mediaType": "VIDEO",
+  "predictType": "AUTO_VIDEO",
+  "aspectRatio": "16:9",
+  "resolution": "1080P",
+  "videoTotalSeconds": 10,
+  "sound": false,
+  "inputImageList": [
+    { "imageUrl": "https://your-uploaded-style-reference.jpg" }
+  ],
+  "inputVideoList": [
+    { "imageUrl": "https://your-uploaded-source-video.mp4" }
   ]
 }
 
@@ -277,6 +325,7 @@ GET /api/v1/platform/predict/query?recordId={recordId}
 | genInfo.width | int | 宽度（像素） |
 | genInfo.height | int | 高度（像素） |
 | genInfo.videoTotalSeconds | int | 视频时长（秒） |
+| genInfo.sound | boolean | 是否开启声音 |
 | results | array | 生成结果列表 |
 | results\[\].taskId | string | 子任务 ID |
 | results\[\].imageId | string | 资源 ID |
@@ -566,26 +615,27 @@ def upload_remote_image(image_url, token):
 
 ### 图片生成模型
 
-| 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 最大生成数 | 最大参考图数 | 每张积分消耗 |
+| 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 最大生成数 | 最大参考图数 | 每张积分消耗 |
 | --- | --- | --- | --- | --- | --- |
-| Qwen Image 2.0 | TXT\_2\_IMG, REF\_2\_IMG | 2K, 4K | 4 | 4 | 1 |
-| Qwen Image Turbo | TXT\_2\_IMG, REF\_2\_IMG | 2K, 4K | 4 | 4 | 1 |
-| Qwen Image 25.08 | TXT\_2\_IMG | 2K, 4K | 4 | 0 | 1 |
-| Seedream 4.5 | TXT\_2\_IMG, REF\_2\_IMG | 2K, 4K | 4 | 8 | 4 |
-| Seedream 4.0 | TXT\_2\_IMG, REF\_2\_IMG | 1K, 2K, 4K | 4 | 8 | 4 |
-| 通义万相 2.6 | TXT\_2\_IMG, REF\_2\_IMG | 1K | 1 | 4 | 4 |
+| Qwen Image 2.0 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
+| Qwen Image Turbo | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
+| Seedream 5.0 Lite | TXT_2_IMG, REF_2_IMG | 2K, 3K | 4 | 8 | 4 |
+| Seedream 4.5 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 8 | 4 |
+| Seedream 4.0 | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4 | 8 | 4 |
+
+> 当前默认推荐接入以上图片模型。`Qwen Image 25.08`、`Qwen Image 25.11`、`Qwen Image 25.12`、`通义万相 2.6` 图片模型在配置中仍保留兼容信息，但不作为当前默认接入模型。
 
 #### 图片画面比例
 
 | aspectRatio | 说明 |
 | --- | --- |
 | 1:1 | 正方形 |
-| 4:3 | 横向 4:3 |
-| 3:2 | 横向 3:2 |
+| 4:3 | 横向 4:3 |
+| 3:2 | 横向 3:2 |
 | 16:9 | 宽屏横向 |
 | 21:9 | 超宽横向 |
-| 3:4 | 纵向 3:4 |
-| 2:3 | 纵向 2:3 |
+| 3:4 | 纵向 3:4 |
+| 2:3 | 纵向 2:3 |
 | 9:16 | 竖屏纵向 |
 | 9:21 | 超高纵向 |
 
@@ -593,72 +643,115 @@ def upload_remote_image(image_url, token):
 
 ### 视频生成模型
 
-| 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 支持的时长(秒) | 最大参考图数 |
-| --- | --- | --- | --- | --- |
-| 通义万相 2.2 Turbo | TXT\_2\_VIDEO, FF\_2\_VIDEO | 720P | 5 | 1 |
-| 通义万相 2.6 | TXT\_2\_VIDEO, FF\_2\_VIDEO, MULTI\_IMG\_2\_VIDEO, VIDEO\_2\_VIDEO | 720P, 1080P | 5, 10, 15 | 5 |
-| 通义万相 2.6 Flash | FF\_2\_VIDEO | 720P, 1080P | 5, 10, 15 | 1 |
-| 可灵 O1 | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO, MULTI\_IMG\_2\_VIDEO, VIDEO\_2\_VIDEO | 720P, 1080P | 5, 10 | 7 |
-| 可灵 2.6 | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 1080P | 5, 10 | 2 |
-| 可灵 2.5 Turbo | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 720P, 1080P | 5, 10 | 2 |
-| Seedance 1.5 Pro | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 480P, 720P | 5, 10, 12 | 2 |
-| Seedance 1.0 Pro | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 480P, 720P, 1080P | 5, 10 | 2 |
-| MiniMax Hailuo 2.3 | TXT\_2\_VIDEO, FF\_2\_VIDEO | 768P, 1080P | 6, 10 | 1 |
-| MiniMax Hailuo 2.3 Fast | FF\_2\_VIDEO | 768P, 1080P | 6, 10 | 1 |
+| 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 支持的时长(秒) | 最大参考图数 | 最大参考视频数 | 支持声音开关 | 默认声音行为 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 通义万相 2.2 Turbo | TXT_2_VIDEO, FF_2_VIDEO | 720P | 5 | 1 | 0 | 否 | 无音频输出 |
+| 通义万相 2.6 Flash | FF_2_VIDEO | 720P, 1080P | 5, 10, 15 | 1 | 0 | 否（当前实现固定开启） | 默认带音频 |
+| 通义万相 2.6 | TXT_2_VIDEO, FF_2_VIDEO, AUTO_VIDEO | 720P, 1080P | 5, 10, 15（AUTO_VIDEO 为 5, 10） | 2（AUTO_VIDEO 为 5） | 3（AUTO_VIDEO） | 部分支持 | `AUTO_VIDEO` 可控；`FF_2_VIDEO` 当前固定带音频；其余模式以模型实际返回为准 |
+| 可灵 3.0 Omni | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO_VIDEO | 720P, 1080P | 5, 10, 15 | 7 | 1 | 是 | 无参考视频时默认开启；有参考视频时默认保留原声 |
+| 可灵 O1 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO_VIDEO | 720P, 1080P | 5, 10 | 7 | 1 | 是 | 无参考视频时默认开启；有参考视频时默认保留原声 |
+| 可灵 3.0 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 720P, 1080P | 5, 10, 15 | 2 | 0 | 是 | 默认开启 |
+| 可灵 2.6 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 1080P | 5, 10 | 2 | 0 | 是 | 默认开启 |
+| 可灵 2.5 Turbo | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 1080P | 5, 10 | 2 | 0 | 是 | 默认开启 |
+| Seedance 1.5 Pro | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 480P, 720P | 5, 10, 12 | 2 | 0 | 是 | 默认开启 |
+| Seedance 1.0 Pro | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 480P, 720P, 1080P | 5, 10 | 2 | 0 | 是 | 默认开启 |
+| MiniMax Hailuo 2.3 | TXT_2_VIDEO, FF_2_VIDEO | 768P, 1080P | 6, 10 | 1 | 0 | 否 | 无音频输出 |
+| MiniMax Hailuo 2.3 Fast | FF_2_VIDEO | 768P, 1080P | 6, 10 | 1 | 0 | 否 | 无音频输出 |
+
+> 当前默认推荐接入以上视频模型。`智能模型`、`Wan 2.2 Turbo` 等隐藏模型在配置中保留兼容信息，但不作为当前默认接入模型。
+>
+> “支持声音开关”表示当前 API 请求里的 `sound` 字段是否会参与该模型/模式的后端转换逻辑，不等同于网页端是否已经开放对应 UI。
+>
+> 未传 `sound` 时，后端当前默认按 `true` 处理；但某些模型/模式会固定带音频、固定无音频，或在带参考视频时将其解释为“是否保留原视频声音”。
+>
+> 对支持音频控制的模型，关闭 `sound` 后可能命中更低的积分档位；对带参考视频的自动视频模式，还可能命中视频编辑相关积分档位。
 
 #### 视频积分消耗
 
-视频积分根据分辨率和时长不同而不同，以下为各模型积分参考：
+视频积分根据模型、分辨率、时长和生成类型不同而不同，以下为当前模型配置对应的积分参考：
 
-**通义万相 2.2 Turbo**
+**通义万相 2.2 Turbo**
 
-| 分辨率 | 5秒 | 10秒 |
-| --- | --- | --- |
-| 720P | 20 | 40 |
+| 分辨率 | 5秒 |
+| --- | --- |
+| 720P | 20 |
 
-**通义万相 2.6**
-
-| 分辨率 | 5秒 | 10秒 | 15秒 |
-| --- | --- | --- | --- |
-| 720P | 40 | 80 | 120 |
-| 1080P | 60 | 120 | 180 |
-
-**通义万相 2.6 Flash**
+**通义万相 2.6 Flash**
 
 | 分辨率 | 5秒 | 10秒 | 15秒 |
 | --- | --- | --- | --- |
 | 720P | 20 | 40 | 60 |
 | 1080P | 40 | 80 | 120 |
 
-**可灵 O1**
+**通义万相 2.6（TXT_2_VIDEO / FF_2_VIDEO）**
+
+| 分辨率 | 5秒 | 10秒 | 15秒 |
+| --- | --- | --- | --- |
+| 720P | 40 | 80 | 120 |
+| 1080P | 60 | 120 | 180 |
+
+**通义万相 2.6（AUTO_VIDEO）**
+
+| 分辨率 | 5秒 | 10秒 |
+| --- | --- | --- |
+| 720P | 40 | 80 |
+| 1080P | 60 | 120 |
+
+**可灵 3.0 Omni（TXT_2_VIDEO / FF_2_VIDEO / FLF_2_VIDEO）**
+
+| 分辨率 | 5秒 | 10秒 | 15秒 |
+| --- | --- | --- | --- |
+| 720P | 60 | 120 | 180 |
+| 1080P | 80 | 160 | 240 |
+
+**可灵 3.0 Omni（AUTO_VIDEO）**
+
+| 分辨率 | 5秒 | 10秒 | 15秒 |
+| --- | --- | --- | --- |
+| 720P | 80 | 160 | 180 |
+| 1080P | 100 | 200 | 240 |
+
+**可灵 O1（TXT_2_VIDEO / FF_2_VIDEO / FLF_2_VIDEO）**
 
 | 分辨率 | 5秒 | 10秒 |
 | --- | --- | --- |
 | 720P | 40 | 80 |
 | 1080P | 60 | 100 |
 
-> 可灵 O1 的 VIDEO\_2\_VIDEO 模式积分更高（720P: 60/120, 1080P: 80/160）
+**可灵 O1（AUTO_VIDEO）**
 
-**可灵 2.6**
+| 分辨率 | 5秒 | 10秒 |
+| --- | --- | --- |
+| 720P | 60 | 120 |
+| 1080P | 80 | 160 |
+
+**可灵 3.0**
+
+| 分辨率 | 5秒 | 10秒 | 15秒 |
+| --- | --- | --- | --- |
+| 720P | 80 | 160 | 240 |
+| 1080P | 100 | 200 | 300 |
+
+**可灵 2.6**
 
 | 分辨率 | 5秒 | 10秒 |
 | --- | --- | --- |
 | 1080P | 60 | 120 |
 
-**可灵 2.5 Turbo**
+**可灵 2.5 Turbo**
 
 | 分辨率 | 5秒 | 10秒 |
 | --- | --- | --- |
 | 1080P | 40 | 80 |
 
-**Seedance 1.5 Pro**
+**Seedance 1.5 Pro**
 
 | 分辨率 | 5秒 | 10秒 | 12秒 |
 | --- | --- | --- | --- |
 | 480P | 20 | 40 | 60 |
 | 720P | 40 | 80 | 100 |
 
-**Seedance 1.0 Pro**
+**Seedance 1.0 Pro**
 
 | 分辨率 | 5秒 | 10秒 |
 | --- | --- | --- |
@@ -666,27 +759,27 @@ def upload_remote_image(image_url, token):
 | 720P | 40 | 80 |
 | 1080P | 80 | 160 |
 
-**MiniMax Hailuo 2.3**
+**MiniMax Hailuo 2.3**
 
 | 分辨率 | 6秒 | 10秒 |
 | --- | --- | --- |
 | 768P | 40 | 80 |
-| 1080P | 60 | 120 |
+| 1080P | 60 | 100 |
 
-**MiniMax Hailuo 2.3 Fast**
+**MiniMax Hailuo 2.3 Fast**
 
 | 分辨率 | 6秒 | 10秒 |
 | --- | --- | --- |
 | 768P | 20 | 40 |
-| 1080P | 40 | 80 |
+| 1080P | 40 | 40 |
 
 #### 视频画面比例
 
 | aspectRatio | 说明 |
 | --- | --- |
 | 1:1 | 正方形 |
-| 4:3 | 横向 4:3 |
-| 3:4 | 纵向 3:4 |
+| 4:3 | 横向 4:3 |
+| 3:4 | 纵向 3:4 |
 | 16:9 | 宽屏横向 |
 | 9:16 | 竖屏纵向 |
 
@@ -698,13 +791,14 @@ def upload_remote_image(image_url, token):
 
 | predictType | 说明 | 适用场景 |
 | --- | --- | --- |
-| TXT\_2\_IMG | 文生图 | 纯文本提示词生成图片 |
-| REF\_2\_IMG | 图生图 | 参考图片 + 提示词生成图片 |
-| TXT\_2\_VIDEO | 文生视频 | 纯文本提示词生成视频 |
-| FF\_2\_VIDEO | 图生视频（首帧） | 单张参考图 + 提示词生成视频 |
-| FLF\_2\_VIDEO | 图生视频（首尾帧） | 首尾两张参考图 + 提示词生成视频 |
-| MULTI\_IMG\_2\_VIDEO | 多图生视频 | 多张参考图 + 提示词生成视频 |
-| VIDEO\_2\_VIDEO | 视频生视频 | 参考视频 + 提示词生成视频 |
+| TXT_2_IMG | 文生图 | 纯文本提示词生成图片 |
+| REF_2_IMG | 图生图 | 一张或多张参考图片 + 提示词生成图片 |
+| TXT_2_VIDEO | 文生视频 | 纯文本提示词生成视频 |
+| FF_2_VIDEO | 图生视频（首帧） | 单张参考图 + 提示词生成视频 |
+| FLF_2_VIDEO | 图生视频（首尾帧） | 首尾两张参考图 + 提示词生成视频 |
+| AUTO_VIDEO | 自动视频模式 | 参考图片、参考视频或混合参考素材 + 提示词生成视频 |
+
+> 历史配置中的 `MULTI_IMG_2_VIDEO`、`VIDEO_2_VIDEO` 等能力，在当前对外模型配置中统一归入 `AUTO_VIDEO` 模式说明。
 
 ---
 
