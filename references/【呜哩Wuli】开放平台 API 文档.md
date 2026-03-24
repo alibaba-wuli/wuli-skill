@@ -1,12 +1,20 @@
-# 呜哩 Wuli 开放平台 API 文档
+# 【呜哩Wuli】开放平台 API 文档
+
+## 已发布对应的SKILL(请参考skill内代码进行API调用)
+
+[https://github.com/alibaba-wuli/wuli-skill](https://github.com/alibaba-wuli/wuli-skill#)
+
+[https://clawhub.ai/sir1st-inc/wuli](https://clawhub.ai/sir1st-inc/wuli)
+
+[《【呜哩Wuli】官方 Skill 使用指南》](https://alidocs.dingtalk.com/i/nodes/dQPGYqjpJYZnRbNYCoYejQOP8akx1Z5N?utm_scene=team_space)
 
 ## 概述
 
 呜哩开放平台提供图片生成、视频生成等 AI 能力的 API 接口，支持通过 API Token 进行身份认证。
 
-*   **服务地址**: \`https://platform.wuli.art/api/v1/\`
+*   **服务地址**: https://platform.wuli.art/api/v1/
     
-*   **认证方式**: 所有平台接口通过请求头 `Authorization: Bearer <API Token>` 传递 API Token 进行身份认证
+*   **认证方式**: 所有平台接口通过请求头 `Authorization: Bearer <API Token>` 传递 API Token 进行身份认证
     
 *   **积分消耗**: API 调用正常消耗积分，积分明细中以"API调用-"为前缀标记
     
@@ -39,12 +47,14 @@ GET /api/v1/user/getApiToken
     "apiToken": "wuli-a1b2c3d4e5f6..."
   }
 }
+
 ```
 
 #### 生成/重置 Token
 
 ```plaintext
 POST /api/v1/user/genApiToken
+
 ```
 
 **响应示例：**
@@ -57,6 +67,7 @@ POST /api/v1/user/genApiToken
     "apiToken": "wuli-a1b2c3d4e5f6..."
   }
 }
+
 ```
 > 重置后旧 Token 立即失效。
 
@@ -66,6 +77,7 @@ POST /api/v1/user/genApiToken
 
 ```plaintext
 Authorization: Bearer wuli-a1b2c3d4e5f6...
+
 ```
 ---
 
@@ -81,6 +93,7 @@ Authorization: Bearer wuli-a1b2c3d4e5f6...
   "data": { ... },
   "requestId": "xxx"
 }
+
 ```
 
 | 字段 | 类型 | 说明 |
@@ -99,6 +112,7 @@ Authorization: Bearer wuli-a1b2c3d4e5f6...
 
 ```plaintext
 POST /api/v1/platform/predict/submit
+
 ```
 
 提交一个图片或视频生成任务。任务为异步执行，提交后通过查询接口轮询结果。
@@ -107,17 +121,17 @@ POST /api/v1/platform/predict/submit
 
 | Header | 必填 | 说明 |
 | --- | --- | --- |
-| Authorization | 是 | `Bearer <API Token>` |
+| Authorization | 是 | `Bearer <API Token>` |
 | Content-Type | 是 | application/json |
 
 #### 请求参数
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| modelName | string | 是 | 模型名称，见下方[可用模型列表](#可用模型) |
+| modelName | string | 是 | 模型名称，见下方[可用模型列表](#%E5%8F%AF%E7%94%A8%E6%A8%A1%E5%9E%8B) |
 | prompt | string | 是 | 提示词，最长 2000 字符 |
 | mediaType | string | 否 | 媒体类型：`IMAGE` 或 `VIDEO`，不传则根据模型自动判断 |
-| predictType | string | 否 | 生成类型，不传则自动推断。详见[生成类型说明](#生成类型) |
+| predictType | string | 否 | 生成类型，不传则自动推断。详见[生成类型说明](#%E7%94%9F%E6%88%90%E7%B1%BB%E5%9E%8B) |
 | aspectRatio | string | 是 | 画面比例，如 `1:1`、`16:9`、`9:16` 等 |
 | resolution | string | 是 | 分辨率，如 `2K`、`4K`（图片）或 `720P`、`1080P`（视频） |
 | n | int | 否 | 生成数量，1-4，默认 1 |
@@ -148,6 +162,7 @@ POST /api/v1/platform/predict/submit
   "n": 4,
   "optimizePrompt": true
 }
+
 ```
 
 **图生图：**
@@ -165,6 +180,7 @@ POST /api/v1/platform/predict/submit
     { "imageUrl": "https://your-uploaded-image-url.jpg" }
   ]
 }
+
 ```
 
 **文生视频：**
@@ -178,6 +194,7 @@ POST /api/v1/platform/predict/submit
   "resolution": "720P",
   "videoTotalSeconds": 5
 }
+
 ```
 
 **图生视频：**
@@ -195,6 +212,7 @@ POST /api/v1/platform/predict/submit
     { "imageUrl": "https://your-uploaded-image-url.jpg" }
   ]
 }
+
 ```
 
 #### 响应参数
@@ -222,6 +240,7 @@ POST /api/v1/platform/predict/submit
     }
   }
 }
+
 ```
 ---
 
@@ -229,6 +248,7 @@ POST /api/v1/platform/predict/submit
 
 ```plaintext
 GET /api/v1/platform/predict/query?recordId={recordId}
+
 ```
 
 根据 `recordId` 查询任务状态和生成结果。建议以 2-5 秒间隔轮询，直到状态为终态。
@@ -244,7 +264,7 @@ GET /api/v1/platform/predict/query?recordId={recordId}
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
 | recordId | string | 记录 ID |
-| recordStatus | string | 任务整体状态，见[任务状态说明](#任务状态) |
+| recordStatus | string | 任务整体状态，见[任务状态说明](#%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81) |
 | gmtCreate | string | 创建时间 |
 | mediaType | string | `IMAGE` 或 `VIDEO` |
 | modelInfo | object | 模型信息 |
@@ -301,6 +321,7 @@ GET /api/v1/platform/predict/query?recordId={recordId}
     ]
   }
 }
+
 ```
 ---
 
@@ -308,6 +329,7 @@ GET /api/v1/platform/predict/query?recordId={recordId}
 
 ```plaintext
 POST /api/v1/platform/predict/noWatermarkImage
+
 ```
 
 获取生成结果的无水印版本 URL。
@@ -328,6 +350,7 @@ POST /api/v1/platform/predict/noWatermarkImage
 {
   "taskId": "01JWABC..."
 }
+
 ```
 
 或批量获取：
@@ -336,6 +359,7 @@ POST /api/v1/platform/predict/noWatermarkImage
 {
   "resourceIdList": ["01JWDEF...", "01JWGHI..."]
 }
+
 ```
 
 #### 响应示例
@@ -345,13 +369,14 @@ POST /api/v1/platform/predict/noWatermarkImage
   "success": true,
   "code": 200,
   "data": {
-    "url": "https://cdn.wuli.art/result/xxx_nowatermark.png",
+    "url": "https://cdn.wuli.art/result/xxx\_nowatermark.png",
     "urlList": [
-      "https://cdn.wuli.art/result/xxx1_nowatermark.png",
-      "https://cdn.wuli.art/result/xxx2_nowatermark.png"
+      "https://cdn.wuli.art/result/xxx1\_nowatermark.png",
+      "https://cdn.wuli.art/result/xxx2\_nowatermark.png"
     ]
   }
 }
+
 ```
 ---
 
@@ -359,9 +384,10 @@ POST /api/v1/platform/predict/noWatermarkImage
 
 ```plaintext
 GET /api/v1/platform/image/getUploadUrl?filename={filename}
+
 ```
 
-获取 OSS 预签名上传 URL，用于上传参考图片或视频。上传成功后，将 `uploadUrl` 去掉签名参数后的公网 URL 用作 `inputImageList` / `inputVideoList` 中的 `imageUrl` 字段值。
+获取 OSS 预签名上传 URL，用于上传参考图片或视频。上传成功后，将 `uploadUrl` 去掉签名参数后的公网 URL 用作 `inputImageList` / `inputVideoList` 中的 `imageUrl` 字段值。
 
 #### 请求参数
 
@@ -369,7 +395,7 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 | --- | --- | --- | --- |
 | filename | string | 是 | 文件名（含后缀），如 `photo.jpg`、`clip.mp4` |
 
-支持的图片格式：`jpg`、`jpeg`、`png`、`webp` 支持的视频格式：`mp4`、`mov`、`avi`、`webm`
+支持的图片格式：`jpg`、`jpeg`、`png`、`webp` 支持的视频格式：`mp4`、`mov`、`avi`、`webm`
 
 #### 响应参数
 
@@ -389,16 +415,150 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
     "objectName": "upload/2026/03/11/abc123.jpg"
   }
 }
+
 ```
 
 #### 使用流程
 
-1.  调用本接口获取 `uploadUrl` 和 `objectName`
+1.  调用本接口获取 `uploadUrl` 和 `objectName`
     
-2.  使用 `PUT` 方法将文件上传到 `uploadUrl`
+2.  使用 `PUT` 方法将文件二进制数据上传到 `uploadUrl`，请求头必须设置 `Content-Type: application/octet-stream`
     
-3.  将 `uploadUrl` 去掉查询参数（`?Expires=...` 部分）后的公网 URL 作为 `inputImageList[].imageUrl` 的值传入生成接口
+3.  将 `uploadUrl` 去掉查询参数（`?Expires=...` 部分）后的基础 URL 作为 `inputImageList[].imageUrl` 或 `inputVideoList[].imageUrl` 的值传入生成接口
     
+
+#### 上传文件到预签名 URL
+
+获取到 `uploadUrl` 后，需要通过 HTTP `PUT` 请求将文件内容上传。以下是具体的上传方式：
+
+**curl 示例（上传本地图片）：**
+
+```bash
+# 1. 获取预签名上传 URL
+UPLOAD_RESP=$(curl -s -H "Authorization: Bearer $API_TOKEN" \
+  "https://platform.wuli.art/api/v1/platform/image/getUploadUrl?filename=photo.jpg")
+
+UPLOAD_URL=$(echo $UPLOAD_RESP | jq -r '.data.uploadUrl')
+
+# 2. PUT 上传文件（Content-Type 必须为 application/octet-stream）
+curl -X PUT \
+  -H "Content-Type: application/octet-stream" \
+  --data-binary @photo.jpg \
+  "$UPLOAD_URL"
+
+# 3. 去掉签名参数，得到公网 URL 用于后续生成任务
+PUBLIC_URL=$(echo "$UPLOAD_URL" | cut -d'?' -f1)
+echo "公网 URL: $PUBLIC_URL"
+```
+
+**curl 示例（上传本地视频）：**
+
+```bash
+UPLOAD_RESP=$(curl -s -H "Authorization: Bearer $API_TOKEN" \
+  "https://platform.wuli.art/api/v1/platform/image/getUploadUrl?filename=clip.mp4")
+
+UPLOAD_URL=$(echo $UPLOAD_RESP | jq -r '.data.uploadUrl')
+
+curl -X PUT \
+  -H "Content-Type: application/octet-stream" \
+  --data-binary @clip.mp4 \
+  "$UPLOAD_URL"
+
+PUBLIC_URL=$(echo "$UPLOAD_URL" | cut -d'?' -f1)
+```
+
+**Python 示例（上传本地文件）：**
+
+```python
+import urllib.parse
+import urllib.request
+import json
+from pathlib import Path
+
+API_BASE = "https://platform.wuli.art/api/v1/platform"
+TOKEN = "wuli-a1b2c3d4e5f6..."
+
+def upload_file(file_path, token):
+    path = Path(file_path)
+    filename = path.name
+    encoded_filename = urllib.parse.quote(filename)
+
+    # Step 1: 获取预签名上传 URL
+    req = urllib.request.Request(
+        f"{API_BASE}/image/getUploadUrl?filename={encoded_filename}"
+    )
+    req.add_header("Authorization", f"Bearer {token}")
+    with urllib.request.urlopen(req) as resp:
+        result = json.loads(resp.read())
+
+    upload_url = result["data"]["uploadUrl"]
+
+    # Step 2: PUT 上传文件（Content-Type 必须为 application/octet-stream）
+    file_data = path.read_bytes()
+    put_req = urllib.request.Request(upload_url, data=file_data, method="PUT")
+    put_req.add_header("Content-Type", "application/octet-stream")
+    with urllib.request.urlopen(put_req, timeout=120) as _:
+        pass
+
+    # Step 3: 去掉查询参数，得到公网 URL
+    parsed = urllib.parse.urlparse(upload_url)
+    public_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+    return public_url
+
+# 上传图片并用于图生图
+image_url = upload_file("photo.jpg", TOKEN)
+# 上传视频并用于视频生视频
+video_url = upload_file("clip.mp4", TOKEN)
+```
+
+**Python 示例（下载远程图片后重新上传到 OSS）：**
+
+如果参考图片来自第三方 URL，需要先下载再上传到呜哩 OSS：
+
+```python
+def upload_remote_image(image_url, token):
+    # Step 1: 下载远程图片
+    req = urllib.request.Request(image_url)
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        image_data = resp.read()
+
+    # 从 URL 路径推断文件扩展名
+    url_path = urllib.parse.urlparse(image_url).path
+    ext = ".jpg"
+    if "." in url_path.split("/")[-1]:
+        ext = "." + url_path.split("/")[-1].rsplit(".", 1)[-1].lower()
+
+    filename = f"upload{ext}"
+    encoded_filename = urllib.parse.quote(filename)
+
+    # Step 2: 获取预签名上传 URL
+    req = urllib.request.Request(
+        f"{API_BASE}/image/getUploadUrl?filename={encoded_filename}"
+    )
+    req.add_header("Authorization", f"Bearer {token}")
+    with urllib.request.urlopen(req) as resp:
+        result = json.loads(resp.read())
+
+    upload_url = result["data"]["uploadUrl"]
+
+    # Step 3: PUT 上传到 OSS
+    put_req = urllib.request.Request(upload_url, data=image_data, method="PUT")
+    put_req.add_header("Content-Type", "application/octet-stream")
+    with urllib.request.urlopen(put_req, timeout=120) as _:
+        pass
+
+    # Step 4: 去掉查询参数，得到公网 URL
+    parsed = urllib.parse.urlparse(upload_url)
+    public_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+    return public_url
+```
+
+> **注意事项：**
+> - 上传时 `Content-Type` 必须设置为 `application/octet-stream`，不要使用 `multipart/form-data` 或文件的实际 MIME 类型
+> - `uploadUrl` 有效期为 1 小时，请及时上传
+> - 上传完成后，需将 `uploadUrl` 去掉 `?` 及其后面的签名参数部分，得到的基础 URL 才能作为 `inputImageList[].imageUrl` 或 `inputVideoList[].imageUrl` 使用
+> - 支持的图片格式：`jpg`、`jpeg`、`png`、`webp`；支持的视频格式：`mp4`、`mov`、`avi`、`webm`
+> - 第三方 URL 的图片/视频不能直接用于生成任务，必须先上传到呜哩 OSS 获取公网 URL
 
 ---
 
@@ -408,12 +568,12 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 
 | 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 最大生成数 | 最大参考图数 | 每张积分消耗 |
 | --- | --- | --- | --- | --- | --- |
-| Qwen Image 2.0 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
-| Qwen Image Turbo | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
-| Qwen Image 25.08 | TXT_2_IMG | 2K, 4K | 4 | 0 | 1 |
-| Seedream 4.5 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 8 | 4 |
-| Seedream 4.0 | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4 | 8 | 4 |
-| 通义万相 2.6 | TXT_2_IMG, REF_2_IMG | 1K | 1 | 4 | 4 |
+| Qwen Image 2.0 | TXT\_2\_IMG, REF\_2\_IMG | 2K, 4K | 4 | 4 | 1 |
+| Qwen Image Turbo | TXT\_2\_IMG, REF\_2\_IMG | 2K, 4K | 4 | 4 | 1 |
+| Qwen Image 25.08 | TXT\_2\_IMG | 2K, 4K | 4 | 0 | 1 |
+| Seedream 4.5 | TXT\_2\_IMG, REF\_2\_IMG | 2K, 4K | 4 | 8 | 4 |
+| Seedream 4.0 | TXT\_2\_IMG, REF\_2\_IMG | 1K, 2K, 4K | 4 | 8 | 4 |
+| 通义万相 2.6 | TXT\_2\_IMG, REF\_2\_IMG | 1K | 1 | 4 | 4 |
 
 #### 图片画面比例
 
@@ -435,16 +595,16 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 
 | 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 支持的时长(秒) | 最大参考图数 |
 | --- | --- | --- | --- | --- |
-| 通义万相 2.2 Turbo | TXT_2_VIDEO, FF_2_VIDEO | 720P | 5 | 1 |
-| 通义万相 2.6 | TXT_2_VIDEO, FF_2_VIDEO, MULTI_IMG_2_VIDEO, VIDEO_2\_VIDEO | 720P, 1080P | 5, 10, 15 | 5 |
-| 通义万相 2.6 Flash | FF_2_VIDEO | 720P, 1080P | 5, 10, 15 | 1 |
-| 可灵 O1 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, MULTI_IMG_2_VIDEO, VIDEO_2\_VIDEO | 720P, 1080P | 5, 10 | 7 |
-| 可灵 2.6 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 1080P | 5, 10 | 2 |
-| 可灵 2.5 Turbo | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 720P, 1080P | 5, 10 | 2 |
-| Seedance 1.5 Pro | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 480P, 720P | 5, 10, 12 | 2 |
-| Seedance 1.0 Pro | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO | 480P, 720P, 1080P | 5, 10 | 2 |
-| MiniMax Hailuo 2.3 | TXT_2_VIDEO, FF_2_VIDEO | 768P, 1080P | 6, 10 | 1 |
-| MiniMax Hailuo 2.3 Fast | FF_2_VIDEO | 768P, 1080P | 6, 10 | 1 |
+| 通义万相 2.2 Turbo | TXT\_2\_VIDEO, FF\_2\_VIDEO | 720P | 5 | 1 |
+| 通义万相 2.6 | TXT\_2\_VIDEO, FF\_2\_VIDEO, MULTI\_IMG\_2\_VIDEO, VIDEO\_2\_VIDEO | 720P, 1080P | 5, 10, 15 | 5 |
+| 通义万相 2.6 Flash | FF\_2\_VIDEO | 720P, 1080P | 5, 10, 15 | 1 |
+| 可灵 O1 | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO, MULTI\_IMG\_2\_VIDEO, VIDEO\_2\_VIDEO | 720P, 1080P | 5, 10 | 7 |
+| 可灵 2.6 | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 1080P | 5, 10 | 2 |
+| 可灵 2.5 Turbo | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 720P, 1080P | 5, 10 | 2 |
+| Seedance 1.5 Pro | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 480P, 720P | 5, 10, 12 | 2 |
+| Seedance 1.0 Pro | TXT\_2\_VIDEO, FF\_2\_VIDEO, FLF\_2\_VIDEO | 480P, 720P, 1080P | 5, 10 | 2 |
+| MiniMax Hailuo 2.3 | TXT\_2\_VIDEO, FF\_2\_VIDEO | 768P, 1080P | 6, 10 | 1 |
+| MiniMax Hailuo 2.3 Fast | FF\_2\_VIDEO | 768P, 1080P | 6, 10 | 1 |
 
 #### 视频积分消耗
 
@@ -477,7 +637,7 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 | 720P | 40 | 80 |
 | 1080P | 60 | 100 |
 
-> 可灵 O1 的 VIDEO_2_VIDEO 模式积分更高（720P: 60/120, 1080P: 80/160）
+> 可灵 O1 的 VIDEO\_2\_VIDEO 模式积分更高（720P: 60/120, 1080P: 80/160）
 
 **可灵 2.6**
 
@@ -538,13 +698,13 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 
 | predictType | 说明 | 适用场景 |
 | --- | --- | --- |
-| TXT_2_IMG | 文生图 | 纯文本提示词生成图片 |
-| REF_2_IMG | 图生图 | 参考图片 + 提示词生成图片 |
-| TXT_2_VIDEO | 文生视频 | 纯文本提示词生成视频 |
-| FF_2_VIDEO | 图生视频（首帧） | 单张参考图 + 提示词生成视频 |
-| FLF_2_VIDEO | 图生视频（首尾帧） | 首尾两张参考图 + 提示词生成视频 |
-| MULTI_IMG_2\_VIDEO | 多图生视频 | 多张参考图 + 提示词生成视频 |
-| VIDEO_2_VIDEO | 视频生视频 | 参考视频 + 提示词生成视频 |
+| TXT\_2\_IMG | 文生图 | 纯文本提示词生成图片 |
+| REF\_2\_IMG | 图生图 | 参考图片 + 提示词生成图片 |
+| TXT\_2\_VIDEO | 文生视频 | 纯文本提示词生成视频 |
+| FF\_2\_VIDEO | 图生视频（首帧） | 单张参考图 + 提示词生成视频 |
+| FLF\_2\_VIDEO | 图生视频（首尾帧） | 首尾两张参考图 + 提示词生成视频 |
+| MULTI\_IMG\_2\_VIDEO | 多图生视频 | 多张参考图 + 提示词生成视频 |
+| VIDEO\_2\_VIDEO | 视频生视频 | 参考视频 + 提示词生成视频 |
 
 ---
 
@@ -596,4 +756,5 @@ GET /api/v1/platform/image/getUploadUrl?filename={filename}
 4. 获取无水印结果（可选）
    POST /api/v1/platform/predict/noWatermarkImage
    → 获得无水印 URL
+
 ```
