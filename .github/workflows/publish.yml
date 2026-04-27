@@ -69,5 +69,6 @@ jobs:
       - name: Publish
         run: |
           clawhub publish . \
+            --slug wuli \
             --version "${{ steps.ver.outputs.version }}" \
             --changelog "$(cat .changelog.txt)"
