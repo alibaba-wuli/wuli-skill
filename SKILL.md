@@ -141,6 +141,7 @@ python3 skill.py --action <action> --prompt "description" [options]
 
 | Model | Best For | Resolution | Ref Images | Cost |
 |---|---|---|---|---|
+| 通义万相 2.7 | Newest Wan image model, up to 9 ref images | 2K, 4K | 9 | 1 credit (2K) / 3 credits (4K) |
 | **Qwen Image 2.0** *(default)* | General purpose, fast, versatile | 2K, 4K | 4 | 1 credit |
 | Qwen Image Turbo | Quick drafts, iterations | 2K, 4K | 4 | 1 credit |
 | Seedream 5.0 Lite | Higher detail at lower cost than premium Seedream | 2K, 3K | 8 | 4 credits |
@@ -152,15 +153,18 @@ python3 skill.py --action <action> --prompt "description" [options]
 - **Best all-rounder**: Qwen Image 2.0
 - **Best detail at mid tier**: Seedream 5.0 Lite
 - **Best quality for photos**: Seedream 4.5
-- **Need 4K**: Qwen Image 2.0, Qwen Image Turbo, or Seedream 4.5
+- **Most ref images (up to 9)**: 通义万相 2.7
+- **Need 4K**: 通义万相 2.7, Qwen Image 2.0, Qwen Image Turbo, or Seedream 4.5
 
 ### Video Models — Which to Choose
 
 | Model | Best For | Resolution | Duration | Key Modes |
 |---|---|---|---|---|
 | **通义万相 2.2 Turbo** *(default)* | Quick videos, low cost | 720P | 5s | TXT, FF |
+| 通义万相 2.7 | Newest Wan video model with stronger narrative | 720P-1080P | 5-15s (AUTO 5-10) | TXT, FF, FLF, AUTO |
 | 通义万相 2.6 Flash | Fast image-to-video | 720P-1080P | 5-15s | FF |
 | 通义万相 2.6 | Best all-rounder with auto-video | 720P-1080P | 5-15s | TXT, FF, AUTO |
+| Happy Horse 1.0 | Long-duration TXT/FF/AUTO video, premium quality | 720P-1080P | 5-15s | TXT, FF, AUTO |
 | 可灵 3.0 Omni | Richest multi-input video workflow | 720P-1080P | 5-15s | TXT, FF, FLF, AUTO |
 | 可灵 O1 | Premium omni video quality | 720P-1080P | 5-10s | TXT, FF, FLF, AUTO |
 | 可灵 3.0 | High-quality first-last-frame video | 720P-1080P | 5-15s | TXT, FF, FLF |
@@ -173,10 +177,10 @@ python3 skill.py --action <action> --prompt "description" [options]
 
 **Recommendations:**
 - **Fastest & cheapest**: 通义万相 2.2 Turbo
-- **Best all-rounder**: 通义万相 2.6
-- **Best multi-input / auto-video**: 可灵 3.0 Omni
-- **Best premium quality**: 可灵 O1 or 可灵 3.0
-- **Best for first-last-frame**: 可灵 3.0, 可灵 2.6, or Seedance 1.5 Pro
+- **Best all-rounder**: 通义万相 2.7 or 通义万相 2.6
+- **Best multi-input / auto-video**: 可灵 3.0 Omni or 通义万相 2.7
+- **Best premium quality**: Happy Horse 1.0, 可灵 O1, or 可灵 3.0
+- **Best for first-last-frame**: 通义万相 2.7, 可灵 3.0, 可灵 2.6, or Seedance 1.5 Pro
 - **Best for 1080P-only workflows**: 可灵 2.6 or 可灵 2.5 Turbo
 
 ## Examples
