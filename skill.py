@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 import platform
+import struct
 import subprocess
 import sys
 import time
@@ -81,11 +82,83 @@ ACTION_DEFAULTS = {
 }
 
 
+def get_image_size(data):
+    """Extract (width, height) from common image formats using stdlib. Returns (None, None) on failure."""
+    try:
+        # PNG: signature + IHDR chunk
+        if data[:8] == b"\x89PNG\r\n\x1a\n":
+            w, h = struct.unpack(">II", data[16:24])
+            return int(w), int(h)
+
+        # GIF
+        if data[:6] in (b"GIF87a", b"GIF89a"):
+            w, h = struct.unpack("<HH", data[6:10])
+            return int(w), int(h)
+
+        # BMP
+        if data[:2] == b"BM":
+            w, h = struct.unpack("<ii", data[18:26])
+            return int(w), abs(int(h))
+
+        # WebP (RIFF....WEBP)
+        if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+            fourcc = data[12:16]
+            if fourcc == b"VP8 ":
+                # VP8 lossy: width/height at offset 26, 14-bit little-endian
+                w = struct.unpack("<H", data[26:28])[0] & 0x3FFF
+                h = struct.unpack("<H", data[28:30])[0] & 0x3FFF
+                return int(w), int(h)
+            if fourcc == b"VP8L":
+                b0, b1, b2, b3 = data[21], data[22], data[23], data[24]
+                w = 1 + (((b1 & 0x3F) << 8) | b0)
+                h = 1 + (((b3 & 0x0F) << 10) | (b2 << 2) | ((b1 & 0xC0) >> 6))
+                return int(w), int(h)
+            if fourcc == b"VP8X":
+                w = 1 + (data[24] | (data[25] << 8) | (data[26] << 16))
+                h = 1 + (data[27] | (data[28] << 8) | (data[29] << 16))
+                return int(w), int(h)
+
+        # JPEG: scan for SOF markers
+        if data[:2] == b"\xff\xd8":
+            i = 2
+            n = len(data)
+            while i < n - 9:
+                if data[i] != 0xFF:
+                    i += 1
+                    continue
+                while i < n and data[i] == 0xFF:
+                    i += 1
+                if i >= n:
+                    break
+                marker = data[i]
+                i += 1
+                # Standalone markers with no payload
+                if marker in (0xD8, 0xD9) or (0xD0 <= marker <= 0xD7):
+                    continue
+                if i + 2 > n:
+                    break
+                seg_len = struct.unpack(">H", data[i:i + 2])[0]
+                # SOF markers: C0-CF except C4, C8, CC
+                if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+                    if i + 7 > n:
+                        break
+                    h = struct.unpack(">H", data[i + 3:i + 5])[0]
+                    w = struct.unpack(">H", data[i + 5:i + 7])[0]
+                    return int(w), int(h)
+                i += seg_len
+    except Exception:
+        pass
+    return None, None
+
+
 def api_request(method, url, token, data=None, content_type="application/json"):
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json",
     }
+    extra_cookie = os.environ.get("WULI_EXTRA_COOKIE")
+    if extra_cookie:
+        headers["Cookie"] = extra_cookie
     body = None
     if data is not None:
         if content_type == "application/json":
@@ -134,8 +207,9 @@ def upload_file(file_path, token):
     with urllib.request.urlopen(put_req, timeout=120) as _:
         pass
 
+    width, height = get_image_size(file_data)
     print(f"Upload complete: {public_url}")
-    return public_url
+    return public_url, width, height
 
 
 def upload_url_media(media_url, token):
@@ -176,8 +250,9 @@ def upload_url_media(media_url, token):
     with urllib.request.urlopen(put_req, timeout=120) as _:
         pass
 
+    width, height = get_image_size(media_data)
     print(f"Upload complete: {public_url}")
-    return public_url
+    return public_url, width, height
 
 
 def parse_list_arg(value):
@@ -295,37 +370,55 @@ def main():
     uploaded_end_images = upload_inputs(end_image_paths, end_image_urls, token)
     uploaded_videos = upload_inputs(video_paths, video_urls, token)
 
-    input_image_urls = uploaded_images + uploaded_end_images
-    input_video_urls = uploaded_videos
+    input_images = uploaded_images + uploaded_end_images
+    input_videos = uploaded_videos
 
     if args.action == "image-edit":
-        if not input_image_urls:
+        if not input_images:
             print("Error: image-edit requires at least one reference image", file=sys.stderr)
             sys.exit(1)
-        if input_video_urls:
+        if input_videos:
             print("Error: image-edit does not accept video input", file=sys.stderr)
             sys.exit(1)
     elif args.action == "image2video":
-        if len(input_image_urls) != 1:
+        if len(input_images) != 1:
             print("Error: image2video requires exactly one reference image", file=sys.stderr)
             sys.exit(1)
-        if input_video_urls:
+        if input_videos:
             print("Error: image2video does not accept video input", file=sys.stderr)
             sys.exit(1)
     elif args.action == "flf2video":
-        if len(input_image_urls) != 2:
+        if len(input_images) != 2:
             print("Error: flf2video requires exactly two reference images (start and end frame)", file=sys.stderr)
             sys.exit(1)
-        if input_video_urls:
+        if input_videos:
             print("Error: flf2video does not accept video input", file=sys.stderr)
             sys.exit(1)
     elif args.action == "auto-video":
-        if not input_image_urls and not input_video_urls:
+        if not input_images and not input_videos:
             print("Error: auto-video requires at least one reference image or video", file=sys.stderr)
             sys.exit(1)
 
-    input_image_list = [{"imageUrl": url} for url in input_image_urls]
-    input_video_list = [{"imageUrl": url} for url in input_video_urls]
+    def _image_item(entry):
+        url, w, h = entry
+        item = {"imageUrl": url}
+        if w is not None and h is not None:
+            item["width"] = w
+            item["height"] = h
+        return item
+
+    input_image_list = [_image_item(entry) for entry in input_images]
+    input_video_list = [{"imageUrl": url} for url, _, _ in input_videos]
+
+    # Warn loudly if we couldn't extract image dimensions — backend validators
+    # for Wan 2.6/2.7, Seedream, Hailuo, etc. dereference width/height directly
+    # and will NPE (HTTP 500) without them.
+    missing_dims = [item["imageUrl"] for item in input_image_list if "width" not in item]
+    if missing_dims:
+        print("Warning: could not extract width/height for: "
+              + ", ".join(missing_dims)
+              + " (some models' validators require these and will fail).",
+              file=sys.stderr)
 
     # Build request
     body = {
