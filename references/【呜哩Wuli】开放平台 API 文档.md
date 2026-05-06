@@ -104,11 +104,22 @@ POST /api/v1/platform/predict/submit
 | seed | int | 否 | 随机种子，默认 -1（随机） |
 | optimizePrompt | boolean | 否 | 是否优化提示词，默认 true，建议开启，尤其适合较短或较泛的提示词 |
 
-**inputImageList / inputVideoList 中每个元素格式：**
+**inputImageList 中每个元素格式：**
 
-| 参数 | 类型 | 说明 |
-| --- | --- | --- |
-| imageUrl | string | 图片/视频的 URL（须通过上传接口获取）。在 `inputVideoList` 中同样使用 `imageUrl` 字段名 |
+| 参数 | 类型 | 必选 | 说明 |
+| --- | --- | --- | --- |
+| imageUrl | string | 是 | 图片 URL（须通过上传接口获取） |
+| width | int | **强烈建议** | 图片像素宽度。多数模型（通义万相 2.6 / 2.7、Seedream 4.x / 5.0、MiniMax Hailuo 2.3 等）在参数校验阶段直接读取此字段，缺失会触发服务端 NPE → HTTP 500「系统错误」。客户端应在上传前从本地图片解析后传入 |
+| height | int | **强烈建议** | 图片像素高度，要求同 `width` |
+| imageId | string | 否 | 资源系统中的图片 ID，可留空 |
+
+**inputVideoList 中每个元素格式：**
+
+| 参数 | 类型 | 必选 | 说明 |
+| --- | --- | --- | --- |
+| imageUrl | string | 是 | 视频 URL（字段名沿用 `imageUrl`，须通过上传接口获取） |
+
+> 视频的 duration / width / height / frameRate / fileSize 等元数据由后端通过 OSS 直接探测获取，调用方**无需**在 `inputVideoList` 中传 width / height，仅需传 `imageUrl`。
 
 > 建议大多数场景保持 `optimizePrompt: true`，可以显著改善短提示词、口语化提示词和描述不完整提示词的生成效果。
 
@@ -142,7 +153,7 @@ POST /api/v1/platform/predict/submit
   "resolution": "2K",
   "n": 2,
   "inputImageList": [
-    { "imageUrl": "https://your-uploaded-image-url.jpg" }
+    { "imageUrl": "https://your-uploaded-image-url.jpg", "width": 1024, "height": 1024 }
   ]
 }
 ```
@@ -174,7 +185,7 @@ POST /api/v1/platform/predict/submit
   "videoTotalSeconds": 5,
   "sound": true,
   "inputImageList": [
-    { "imageUrl": "https://your-uploaded-image-url.jpg" }
+    { "imageUrl": "https://your-uploaded-image-url.jpg", "width": 1280, "height": 720 }
   ]
 }
 ```
@@ -191,8 +202,8 @@ POST /api/v1/platform/predict/submit
   "resolution": "1080P",
   "videoTotalSeconds": 5,
   "inputImageList": [
-    { "imageUrl": "https://your-uploaded-start-frame.jpg" },
-    { "imageUrl": "https://your-uploaded-end-frame.jpg" }
+    { "imageUrl": "https://your-uploaded-start-frame.jpg", "width": 1280, "height": 720 },
+    { "imageUrl": "https://your-uploaded-end-frame.jpg", "width": 1280, "height": 720 }
   ]
 }
 ```
@@ -210,7 +221,7 @@ POST /api/v1/platform/predict/submit
   "videoTotalSeconds": 10,
   "sound": false,
   "inputImageList": [
-    { "imageUrl": "https://your-uploaded-style-reference.jpg" }
+    { "imageUrl": "https://your-uploaded-style-reference.jpg", "width": 1280, "height": 720 }
   ],
   "inputVideoList": [
     { "imageUrl": "https://your-uploaded-source-video.mp4" }
@@ -804,6 +815,12 @@ def upload_remote_image(image_url, token):
 | 1001 | 参数错误 |
 | 2001 | 积分余额不足 |
 | 5000 | 服务内部错误 |
+
+### 常见错误：HTTP 500「系统错误」
+
+如果 `predict/submit` 返回 HTTP 500（消息为「系统错误，请稍后重试」），最常见的原因是 `inputImageList` 中漏传了 `width` / `height`。
+通义万相 2.6 / 2.7、Seedream 4.x / 5.0、MiniMax Hailuo 2.3 等模型的参数校验器会直接读取这两个字段进行尺寸 / 宽高比校验，缺失会触发 NPE。
+**请在客户端解析图片像素宽高后再随 `inputImageList` 一起提交。**
 
 ---
 
