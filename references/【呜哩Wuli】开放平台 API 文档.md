@@ -125,6 +125,42 @@ POST /api/v1/platform/predict/submit
 
 > `sound` 仅对支持声音控制的视频模型有效。对于带参考视频的某些自动视频模式，`sound` 可能表示“是否保留原视频声音”而不是“是否重新生成声音”，以实际模型实现为准。
 
+#### prompt 中的内联引用（`@imageN` / `@videoN`）
+
+开放平台 API 在 `prompt`(以及 `negativePrompt`)中支持内联占位符，把一段描述绑定到某个具体的参考素材：
+
+- `@image1`、`@image2`…… 对应 `inputImageList` 中第 1、2…… 个元素
+- `@video1`、`@video2`…… 对应 `inputVideoList` 中第 1、2…… 个元素
+- **不允许空格**：`@image1` ✅，`@image 1` ✗，`@ image1` ✗
+- 大小写不敏感：`@Image1` / `@IMAGE1` 等价
+- **索引超过实际参考数量时直接返回 HTTP 400**(例如只传了 2 张图却写 `@image5`)
+- 服务端会把占位符改写成与对话框协议同形的 `<<<image_N:url>>>` 后再下发,各模型的最终行为如下:
+  - **可灵系列**(O1 / V3 Omni / V3 / V2.6 / V2.5 Turbo):原生支持 `<<<image_N>>>` 形式,会按下标绑定到 `image_list` 中对应元素
+  - **通义万相 2.6 R2V / Happy Horse 1.0 R2V**:模型内部把占位符替换为 `characterN` 角色 token
+  - **其他模型**(Qwen Image / Seedream / Hailuo / Seedance):占位符外壳被剥掉,只剩 `image_N` 文本进入 prompt;没有真正的绑定语义,但人类可读
+- **本能力仅对开放平台 API 生效**;网页对话框走自己的富文本 @ 提及通道,无需(也不会)消费此语法
+
+示例(把第 1 张参考图中的人物放进第 1 个参考视频的场景)：
+
+```plaintext
+{
+  "modelName": "通义万相 2.6",
+  "prompt": "把 @image1 中的人物放进 @video1 的场景，保留 @image1 的服装",
+  "mediaType": "VIDEO",
+  "predictType": "AUTO_VIDEO",
+  "aspectRatio": "16:9",
+  "resolution": "720P",
+  "videoTotalSeconds": 10,
+  "inputImageList": [
+    { "imageUrl": "https://.../hero.jpg", "width": 1024, "height": 1024 }
+  ],
+  "inputVideoList": [
+    { "imageUrl": "https://.../scene.mp4" }
+  ],
+  "optimizePrompt": true
+}
+```
+
 #### 请求示例
 
 **文生图：**

@@ -115,6 +115,25 @@ python3 skill.py --action <action> --prompt "description" [options]
 | `--optimize` | true | Prompt optimization is enabled by default and recommended for most prompts |
 | `--no-optimize` | — | Disable prompt optimization when you need fully raw prompt behavior |
 
+### Inline References in Prompt (`@imageN` / `@videoN`)
+
+The open platform API accepts inline placeholders inside the prompt to bind a phrase to a specific reference asset:
+
+- `@image1`, `@image2`, ... refer to the 1st, 2nd, ... entry of `--image_path` / `--image_url` (in the order given)
+- `@video1`, `@video2`, ... refer to the 1st, 2nd, ... entry of `--video_path` / `--video_url`
+- **No space allowed** between `@` and the type, or between the type and the index: `@image1` ✅,  `@image 1` ✗,  `@ image1` ✗
+- Case-insensitive: `@Image1` / `@IMAGE1` also work
+- **Index out of range** (e.g. `@image5` when only 2 images are passed) → backend rejects with HTTP 400
+- Placeholder is rewritten into the canonical `<<<image_N:url>>>` form before reaching any model:
+  - **可灵 series** (O1 / V3 Omni / V3 / V2.6 / V2.5 Turbo) — natively understands `<<<image_N>>>` as the Nth entry of `image_list`
+  - **通义万相 2.6 R2V / Happy Horse 1.0 R2V** — replaced with the model's internal `characterN` role token
+  - **Other models** (Qwen Image / Seedream / Hailuo / Seedance) — the tag is stripped down to plain text `image_N` and embedded inline; no semantic binding, but human readable
+
+Example:
+```bash
+python3 skill.py --action auto-video   --prompt "把 @image1 中的人物放进 @video1 的场景,保留 @image1 的服装"   --image_path ./hero.jpg --video_path ./scene.mp4   --model "通义万相 2.6"
+```
+
 ### Input Rules
 
 - `image-edit` accepts one or more reference images
