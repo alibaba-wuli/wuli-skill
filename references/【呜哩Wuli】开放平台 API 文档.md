@@ -1,16 +1,10 @@
 # 【呜哩Wuli】开放平台 API 文档
 
-## 已发布对应的SKILL(请参考skill内代码进行API调用)
-
-[https://github.com/alibaba-wuli/wuli-skill](https://github.com/alibaba-wuli/wuli-skill#)
-
-[https://clawhub.ai/sir1st-inc/wuli](https://clawhub.ai/sir1st-inc/wuli)
-
-[《【呜哩Wuli】官方 Skill 使用指南》](https://alidocs.dingtalk.com/i/nodes/dQPGYqjpJYZnRbNYCoYejQOP8akx1Z5N?utm_scene=team_space)
-
-> markdown版本: 
-
-[https://github.com/alibaba-wuli/wuli-skill/blob/main/references/%E3%80%90%E5%91%9C%E5%93%A9Wuli%E3%80%91%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%20API%20%E6%96%87%E6%A1%A3.md: https://github.com/alibaba-wuli/wuli-skill/blob/main/references/%E3%80%90%E5%91%9C%E5%93%A9Wuli%E3%80%91%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%20API%20%E6%96%87%E6%A1%A3.md](https://github.com/alibaba-wuli/wuli-skill/blob/main/references/%E3%80%90%E5%91%9C%E5%93%A9Wuli%E3%80%91%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%20API%20%E6%96%87%E6%A1%A3.md)
+### 官方skill文档
+[[github链接]](https://github.com/alibaba-wuli/wuli-skill#)
+[[openclaw链接]](https://clawhub.ai/sir1st-inc/wuli)
+[[呜哩Wuli官方 Skill 使用指南]](https://alidocs.dingtalk.com/i/nodes/dQPGYqjpJYZnRbNYCoYejQOP8akx1Z5N?utm_scene=team_space)
+[[markdown下载]](https://github.com/alibaba-wuli/wuli-skill/blob/main/references/%E3%80%90%E5%91%9C%E5%93%A9Wuli%E3%80%91%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0%20API%20%E6%96%87%E6%A1%A3.md)
 
 ## 概述
 
