@@ -327,6 +327,8 @@ def main():
                         help="Local video path(s), comma-separated for auto-video")
     parser.add_argument("--duration", type=int, default=None, help="Video duration in seconds")
     parser.add_argument("--negative_prompt", default=None, help="Negative prompt")
+    parser.add_argument("--quality", default=None,
+                        help="Image quality for supported models: low/medium/high or 低画质/标准画质/高画质")
     parser.set_defaults(optimize=True)
     parser.add_argument("--optimize", action="store_true", dest="optimize",
                         help="Enable prompt optimization (default)")
@@ -439,6 +441,8 @@ def main():
         body["videoTotalSeconds"] = duration if duration else 5
         if args.sound is not None:
             body["sound"] = args.sound
+    if args.quality:
+        body["quality"] = args.quality
     if args.negative_prompt:
         body["negativePrompt"] = args.negative_prompt
 
@@ -453,6 +457,8 @@ def main():
         else:
             print(f"Sound: {args.sound}")
     print(f"Aspect: {aspect_ratio}  Resolution: {resolution}")
+    if args.quality:
+        print(f"Quality: {args.quality}")
     if input_image_list:
         print(f"Image refs: {len(input_image_list)}")
     if input_video_list:

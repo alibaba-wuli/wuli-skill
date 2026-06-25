@@ -1,7 +1,7 @@
 {
   "name": "wuli",
-  "version": "1.0.8",
-  "description": "Generate AI images and videos with 17+ active models via Wuli.art open platform API. Supports text-to-image, multi-reference image editing, text-to-video, first-frame image-to-video, first-last-frame video, auto-video from images and videos, prompt optimization, sound control for supported video models, uploads, and no-watermark downloads.",
+  "version": "1.0.9",
+  "description": "Generate AI images and videos with 25+ active models via Wuli.art open platform API. Supports text-to-image, multi-reference image editing, text-to-video, first-frame image-to-video, first-last-frame video, auto-video from images and videos, prompt optimization, image quality tiers, sound control for supported video models, uploads, and no-watermark downloads.",
   "author": "sir1st",
   "license": "MIT-0",
   "homepage": "https://wuli.art",
@@ -50,7 +50,7 @@
       "default": ""
     },
     "aspect_ratio": {
-      "description": "Aspect ratio (1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9, 9:21)",
+      "description": "Aspect ratio (1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 2:1, 1:2, 5:4, 4:5, 21:9, 9:21, 4:1, 1:4 depending on model)",
       "default": "1:1"
     },
     "resolution": {
@@ -85,6 +85,10 @@
     },
     "negative_prompt": {
       "description": "Negative prompt to exclude unwanted elements"
+    },
+    "quality": {
+      "description": "Image quality for supported models. Values include low, medium, high, 低画质, 标准画质, 高画质.",
+      "default": ""
     },
     "sound": {
       "description": "Enable sound for supported video models. If omitted, backend default behavior is used (currently true).",

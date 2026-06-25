@@ -1,7 +1,7 @@
 ---
 name: wuli
-description: Generate AI images and videos with 17+ active models via Wuli.art open platform API. Use when creating images from text prompts, editing images with one or more references, generating videos from text, animating a first frame, generating first-last-frame videos, or creating auto-video tasks from images and videos. Covers text-to-image, image-to-image, text-to-video, first-frame video, first-last-frame video, auto-video, prompt optimization, uploads, and no-watermark downloads.
-version: 1.0.6
+description: Generate AI images and videos with 25+ active models via Wuli.art open platform API. Use when creating images from text prompts, editing images with one or more references, generating videos from text, animating a first frame, generating first-last-frame videos, or creating auto-video tasks from images and videos. Covers text-to-image, image-to-image, text-to-video, first-frame video, first-last-frame video, auto-video, image quality tiers, prompt optimization, uploads, and no-watermark downloads.
+version: 1.0.9
 author: sir1st
 homepage: https://wuli.art
 repository: https://github.com/alibaba-wuli/wuli-skill
@@ -36,7 +36,7 @@ triggers:
 
 # Wuli Platform — AI Image & Video Generation
 
-Generate AI images and videos via the [Wuli.art](https://wuli.art) open platform API. Supports text-to-image, multi-reference image editing, text-to-video, first-frame image-to-video, first-last-frame video, auto-video, and sound control on supported video models across 17+ active models including Qwen Image, Seedream, 通义万相, 可灵, Seedance, and MiniMax Hailuo, with automatic uploads and no-watermark downloads when available.
+Generate AI images and videos via the [Wuli.art](https://wuli.art) open platform API. Supports text-to-image, multi-reference image editing, text-to-video, first-frame image-to-video, first-last-frame video, auto-video, and sound control on supported video models across 25+ active models including Qwen Image, Seedream, GPT Image 2, Gemini image models, 通义万相, Happy Horse, 可灵, Seedance, and MiniMax Hailuo, with automatic uploads and no-watermark downloads when available.
 
 ## When to Use
 
@@ -101,6 +101,7 @@ python3 skill.py --action <action> --prompt "description" [options]
 | `--model` | auto-selected | Model name (see Model Selection Guide) |
 | `--aspect_ratio` | 1:1 (image) / 16:9 (video) | Aspect ratio |
 | `--resolution` | 2K (image) / 720P (video) | Output resolution. Model-dependent values include `2K`, `3K`, `4K`, `480P`, `720P`, `768P`, `1080P` |
+| `--quality` | backend default | Image quality for supported models. Values include `low`, `medium`, `high`, `低画质`, `标准画质`, `高画质` |
 | `--n` | 1 | Number of images to generate (1-4, image-gen only) |
 | `--image_url` | — | Reference image URL(s). Supports comma-separated multiple URLs |
 | `--image_path` | — | Local reference image path(s). Supports comma-separated multiple files |
@@ -152,7 +153,10 @@ python3 skill.py --action auto-video   --prompt "把 @image1 中的人物放进 
 | `9:16` | Vertical — phone wallpapers, stories, reels |
 | `4:3` | Classic — photos, prints |
 | `3:2` | Photography — DSLR-style landscape shots |
+| `2:1` / `1:2` | Wide or tall image crops on supported image models |
+| `5:4` / `4:5` | Print and portrait image crops on supported image models |
 | `21:9` | Ultra-wide — cinematic banners (image only on supported models) |
+| `4:1` / `1:4` | Extreme panorama or vertical crops on supported Gemini image models |
 
 ## Model Selection Guide
 
@@ -160,6 +164,9 @@ python3 skill.py --action auto-video   --prompt "把 @image1 中的人物放进 
 
 | Model | Best For | Resolution | Ref Images | Cost |
 |---|---|---|---|---|
+| 智能IMAGE 2 | Highest-control image generation/editing with quality tiers | 1K, 2K, 4K | 4 | quality-based |
+| 全能图片 2 | Gemini Flash image generation/editing | 1K, 2K, 4K | 4 | 9-20 credits |
+| 全能图片 Pro | Gemini Pro image generation/editing | 1K, 2K, 4K | 4 | 4-5 credits |
 | 通义万相 2.7 | Newest Wan image model, up to 9 ref images | 2K, 4K | 9 | 1 credit (2K) / 3 credits (4K) |
 | **Qwen Image 2.0** *(default)* | General purpose, fast, versatile | 2K, 4K | 4 | 1 credit |
 | Qwen Image Turbo | Quick drafts, iterations | 2K, 4K | 4 | 1 credit |
@@ -170,6 +177,8 @@ python3 skill.py --action auto-video   --prompt "把 @image1 中的人物放进 
 **Recommendations:**
 - **Fastest & cheapest**: Qwen Image Turbo
 - **Best all-rounder**: Qwen Image 2.0
+- **Best quality control**: 智能IMAGE 2 with `--quality low|medium|high`
+- **Best new image models**: 智能IMAGE 2, 全能图片 2, 全能图片 Pro
 - **Best detail at mid tier**: Seedream 5.0 Lite
 - **Best quality for photos**: Seedream 4.5
 - **Most ref images (up to 9)**: 通义万相 2.7
@@ -183,7 +192,8 @@ python3 skill.py --action auto-video   --prompt "把 @image1 中的人物放进 
 | 通义万相 2.7 | Newest Wan video model with stronger narrative | 720P-1080P | 5-15s (AUTO 5-10) | TXT, FF, FLF, AUTO |
 | 通义万相 2.6 Flash | Fast image-to-video | 720P-1080P | 5-15s | FF |
 | 通义万相 2.6 | Best all-rounder with auto-video | 720P-1080P | 5-15s | TXT, FF, AUTO |
-| Happy Horse 1.0 | Long-duration TXT/FF/AUTO video, premium quality | 720P-1080P | 5-15s | TXT, FF, AUTO |
+| Happy Horse 1.1 | Newest Happy Horse video model, lower 1080P cost | 720P-1080P | 5-15s | TXT, FF, AUTO |
+| Happy Horse 1.0 | Long-duration TXT/FF/AUTO video with video-reference edit | 720P-1080P | 3-15s | TXT, FF, AUTO |
 | 可灵 3.0 Omni | Richest multi-input video workflow | 720P-1080P | 5-15s | TXT, FF, FLF, AUTO |
 | 可灵 O1 | Premium omni video quality | 720P-1080P | 5-10s | TXT, FF, FLF, AUTO |
 | 可灵 3.0 | High-quality first-last-frame video | 720P-1080P | 5-15s | TXT, FF, FLF |
@@ -198,7 +208,8 @@ python3 skill.py --action auto-video   --prompt "把 @image1 中的人物放进 
 - **Fastest & cheapest**: 通义万相 2.2 Turbo
 - **Best all-rounder**: 通义万相 2.7 or 通义万相 2.6
 - **Best multi-input / auto-video**: 可灵 3.0 Omni or 通义万相 2.7
-- **Best premium quality**: Happy Horse 1.0, 可灵 O1, or 可灵 3.0
+- **Best Happy Horse model**: Happy Horse 1.1 for image references, Happy Horse 1.0 when you need video-reference auto-video
+- **Best premium quality**: Happy Horse 1.1, 可灵 O1, or 可灵 3.0
 - **Best for first-last-frame**: 通义万相 2.7, 可灵 3.0, 可灵 2.6, or Seedance 1.5 Pro
 - **Best for 1080P-only workflows**: 可灵 2.6 or 可灵 2.5 Turbo
 
@@ -218,6 +229,9 @@ python3 skill.py --action image-gen --prompt "photorealistic mountain landscape,
 
 # Higher-detail model
 python3 skill.py --action image-gen --prompt "luxury product photography, studio lighting"   --model "Seedream 5.0 Lite" --resolution 3K
+
+# New quality-tier image model
+python3 skill.py --action image-gen --prompt "editorial product shot, crisp reflective studio lighting"   --model "智能IMAGE 2" --resolution 2K --quality high
 
 # Prompt optimization is enabled by default
 python3 skill.py --action image-gen --prompt "a cat"

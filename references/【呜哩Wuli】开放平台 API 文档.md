@@ -90,6 +90,7 @@ POST /api/v1/platform/predict/submit
 | aspectRatio | string | 是 | 画面比例，如 `1:1`、`16:9`、`9:16` 等 |
 | resolution | string | 是 | 分辨率，如 `2K`、`4K`（图片）或 `720P`、`1080P`（视频） |
 | n | int | 否 | 生成数量，1-4，默认 1 |
+| quality | string | 否 | 图片质量档位，仅支持的图片模型生效。可传 `low`、`medium`、`high`，或中文 `低画质`、`标准画质`、`高画质` |
 | inputImageList | array | 否 | 参考图片列表，用于图生图、首帧图生视频、首尾帧图生视频、自动视频模式 |
 | inputVideoList | array | 否 | 参考视频列表，用于自动视频模式 |
 | videoTotalSeconds | int | 否 | 视频时长（秒），仅视频模型有效，默认 5 |
@@ -375,6 +376,8 @@ POST /api/v1/platform/predict/noWatermarkImage
 
 获取生成结果的无水印版本 URL。
 
+> **重要：**需要先在网页端开启「去除品牌水印」，并在设置中开启「去除水印」，才可拿到左上角和右下角都没有水印的图片/视频。
+
 #### 请求参数
 
 | 参数 | 类型 | 必填 | 说明 |
@@ -609,6 +612,9 @@ def upload_remote_image(image_url, token):
 
 | 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 最大生成数 | 最大参考图数 | 每张积分消耗 |
 | --- | --- | --- | --- | --- | --- |
+| 智能IMAGE 2 | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4 | 4 | 质量档位计费：1K=1/7/26，2K=2/13/51，4K=4/16/56 |
+| 全能图片 2 | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4 | 4 | 1K=9，2K=13，4K=20 |
+| 全能图片 Pro | TXT_2_IMG, REF_2_IMG | 1K, 2K, 4K | 4 | 4 | 1K/2K=4，4K=5 |
 | 通义万相 2.7 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 9 | 2K=1，4K=3 |
 | Qwen Image 2.0 | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
 | Qwen Image Turbo | TXT_2_IMG, REF_2_IMG | 2K, 4K | 4 | 4 | 1 |
@@ -624,13 +630,19 @@ def upload_remote_image(image_url, token):
 | --- | --- |
 | 1:1 | 正方形 |
 | 4:3 | 横向 4:3 |
+| 5:4 | 横向 5:4 |
 | 3:2 | 横向 3:2 |
+| 2:1 | 横向 2:1 |
 | 16:9 | 宽屏横向 |
 | 21:9 | 超宽横向 |
+| 4:1 | 极宽横向 |
 | 3:4 | 纵向 3:4 |
+| 4:5 | 纵向 4:5 |
 | 2:3 | 纵向 2:3 |
+| 1:2 | 纵向 1:2 |
 | 9:16 | 竖屏纵向 |
 | 9:21 | 超高纵向 |
+| 1:4 | 极高纵向 |
 
 ---
 
@@ -639,7 +651,8 @@ def upload_remote_image(image_url, token):
 | 模型名称 (modelName) | 支持的生成类型 | 支持的分辨率 | 支持的时长(秒) | 最大参考图数 | 最大参考视频数 | 支持声音开关 | 默认声音行为 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 通义万相 2.7 | TXT_2_VIDEO, FF_2_VIDEO, FLF_2_VIDEO, AUTO\_VIDEO | 720P, 1080P | 5, 10, 15（AUTO\_VIDEO 仅 5, 10） | 2（AUTO\_VIDEO 为 5） | 3（AUTO\_VIDEO） | 否 | 以模型实际返回为准 |
-| Happy Horse 1.0 | TXT_2_VIDEO, FF_2_VIDEO, AUTO\_VIDEO | 720P, 1080P | 5, 10, 15 | 1（AUTO\_VIDEO 为 9） | 1（AUTO\_VIDEO） | 否 | 以模型实际返回为准 |
+| Happy Horse 1.1 | TXT_2_VIDEO, FF_2_VIDEO, AUTO\_VIDEO | 720P, 1080P | 5, 10, 15 | 1（AUTO\_VIDEO 为 9） | 0 | 是 | 默认开启 |
+| Happy Horse 1.0 | TXT_2_VIDEO, FF_2_VIDEO, AUTO\_VIDEO | 720P, 1080P | 3-15（积分按 5/10/15 档） | 1（AUTO\_VIDEO 为 9） | 1（AUTO\_VIDEO） | 是 | 默认开启；有参考视频时可选择保留原声 |
 | 通义万相 2.2 Turbo | TXT_2_VIDEO, FF_2_VIDEO | 720P | 5 | 1 | 0 | 否 | 无音频输出 |
 | 通义万相 2.6 Flash | FF_2_VIDEO | 720P, 1080P | 5, 10, 15 | 1 | 0 | 否（当前实现固定开启） | 默认带音频 |
 | 通义万相 2.6 | TXT_2_VIDEO, FF_2_VIDEO, AUTO\_VIDEO | 720P, 1080P | 5, 10, 15（AUTO\_VIDEO 为 5, 10） | 2（AUTO\_VIDEO 为 5） | 3（AUTO\_VIDEO） | 部分支持 | `AUTO_VIDEO` 可控；`FF_2_VIDEO` 当前固定带音频；其余模式以模型实际返回为准 |
@@ -678,6 +691,13 @@ def upload_remote_image(image_url, token):
 | --- | --- | --- |
 | 720P | 40 | 80 |
 | 1080P | 60 | 120 |
+
+**Happy Horse 1.1**
+
+| 分辨率 | 5秒 | 10秒 | 15秒 |
+| --- | --- | --- | --- |
+| 720P | 60 | 120 | 180 |
+| 1080P | 70 | 140 | 210 |
 
 **Happy Horse 1.0**
 
@@ -869,7 +889,8 @@ def upload_remote_image(image_url, token):
    GET /api/v1/platform/predict/query?recordId=xxx
    → 直到 recordStatus 为终态 (SUCCEED / FAILED / ...)
 
-4. 获取无水印结果（可选）
+4. 获取无水印图片/视频（可选）
+   重要：需要先在网页端开启「去除品牌水印」，并在设置中开启「去除水印」，才可拿到左上角和右下角都没有水印的图片/视频。
    POST /api/v1/platform/predict/noWatermarkImage
    → 获得无水印 URL
 ```
